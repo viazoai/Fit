@@ -35,3 +35,26 @@ Polar 프로젝트(`/home/zoai/Projects/Polar/frontend`)의 shadcn/ui 설정을 
 ## Target Users
 
 부부 2인 사용자. UI 언어는 **한국어**.
+
+## Claude Agent & Skill 구성
+
+프로젝트에서는 다음 에이전트/스킬 구조를 사용합니다.
+
+- `.claude/skills/common-ui.skill.md` : 모바일 우선, shadcn/ui, 한국어, 부부 UX 공통 가이드
+- `.claude/skills/designer-shadcn.skill.md` : shadcn/ui 기반 디자인 스펙
+- `.claude/skills/frontend-react.skill.md` : React+TypeScript 컴포넌트 구현
+- `.claude/skills/backend-fastapi.skill.md` : FastAPI + PostgreSQL + OpenAI 백엔드
+
+- `.claude/agents/designer.agent.md` : UI/UX 디자인 작업 에이전트
+- `.claude/agents/frontend.agent.md` : 프론트엔드 구현 에이전트
+- `.claude/agents/backend.agent.md` : 백엔드 구현 에이전트
+- `.claude/agents/project-manager.agent.md` : 복합 작업 오케스트레이션 에이전트
+
+### 작업 방식
+
+1. 단일 역할 요청(예: 디자인 또는 프론트, 백엔드)에는 해당 에이전트를 직접 호출
+2. 복합 요청(예: 전체 기능 구현)에는 project-manager 에이전트 호출
+3. 병렬 처리가 필요하면 step을 분리하거나 명시적으로 `designer + frontend` 등의 순차 실행으로 구성
+4. 전체 규칙은 한글로 작성하며, `description`에는 명확한 `사용 시점` 키워드 포함
+
+이 가이드를 바탕으로 Claude Code가 Fit 엔지니어링 방식에 맞는 출력 결과를 내도록 설정합니다.
