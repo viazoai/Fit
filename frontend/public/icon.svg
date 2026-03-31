@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#1a1a1a"/>
+  <g transform="translate(256,256)" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- 덤벨 아이콘 -->
+    <line x1="-80" y1="0" x2="80" y2="0"/>
+    <line x1="-120" y1="-48" x2="-120" y2="48"/>
+    <line x1="120" y1="-48" x2="120" y2="48"/>
+    <rect x="-104" y="-72" width="48" height="144" rx="12" stroke="#fff" fill="#333"/>
+    <rect x="56" y="-72" width="48" height="144" rx="12" stroke="#fff" fill="#333"/>
+    <rect x="-148" y="-48" width="28" height="96" rx="8" stroke="#fff" fill="#444"/>
+    <rect x="120" y="-48" width="28" height="96" rx="8" stroke="#fff" fill="#444"/>
+  </g>
+</svg>
