@@ -30,7 +30,7 @@ allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git
    - `[Config]` — 빌드, 린터, Docker, CI/CD 등 설정 변경
    - `[Test]` — 테스트 추가/수정
    - `[Chore]` — 위 어디에도 해당하지 않는 잡무
-2. **Title**: Phase 태그 뒤에 작업 내용을 한국어 한 문장으로 작성한다. 70자 이내.
+2. **Title**: Phase 태그 뒤에 작업 내용을 한국어 한 문장으로 작성한다. 40자 이내.
 3. **Body**: 세부 작업 내용을 불릿(`-`)으로 나열한다. 각 항목은 간결하게.
 4. **Co-Author**: 마지막 줄에 `Co-Authored-By: Claude <noreply@anthropic.com>` 을 추가한다.
 5. 커밋 대상에서 `.env`, 크레덴셜 파일 등 민감 파일은 제외한다.
