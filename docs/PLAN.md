@@ -50,15 +50,15 @@ Phase 6  PWA + 홈랩 배포
 
 ### 작업 목록
 
-- [ ] Vite + React + TypeScript 프로젝트 초기화
-- [ ] Tailwind CSS v4 설정
-- [ ] shadcn/ui 설치 및 Polar 프로젝트 디자인 시스템 이식
+- [x] Vite + React + TypeScript 프로젝트 초기화
+- [x] Tailwind CSS v4 설정
+- [x] shadcn/ui 설치 및 Polar 프로젝트 디자인 시스템 이식
   - `components/ui/` 기본 컴포넌트 (Button, Card, Input, Dialog 등)
   - `lib/utils.ts` (`cn()` 유틸리티)
-- [ ] React Router 설정 (모바일 탭 네비게이션 구조)
-- [ ] 프로젝트 디렉토리 구조 확정
-- [ ] ESLint + Prettier 설정
-- [ ] `useIsMobile()` 훅 구현
+- [x] React Router 설정 (모바일 탭 네비게이션 구조)
+- [x] 프로젝트 디렉토리 구조 확정
+- [x] ESLint + Prettier 설정
+- [x] `useIsMobile()` 훅 구현
 
 ### 예상 디렉토리 구조
 
