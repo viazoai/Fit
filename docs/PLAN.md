@@ -250,6 +250,43 @@ frontend/
 - [ ] Mock 데이터를 실제 노션 데이터로 교체
 - [ ] 데이터 구조 검증 및 타입 정합성 확인
 
+### 1.5-4. 다크 테마 + 브랜드 컬러 적용
+
+**목표:** 앱 전체에 다크 배경 기반의 일관된 컬러 시스템 구축
+
+#### 컬러 시스템 (확정)
+
+레퍼런스 이미지(`docs/assets/image-1.png`, `image-2.jpg`, `image-3.png`) 기반으로 확정.
+
+| 토큰 | 값 | 용도 |
+|------|----|------|
+| `--color-background` | `#0F0F0F` | 전체 배경 (거의 블랙) |
+| `--color-surface` | `#1A1A1A` | 카드 / 패널 배경 |
+| `--color-border` | `#2A2A2A` | 구분선 |
+| `--color-accent` | `#CCFF00` | **주 포인트 (네온 라임)** — CTA, 탭 활성, 스트릭, 포인트 잔액 |
+| `--color-accent-muted` | `#6B8500` | 라임 저채도 — 비활성 상태 |
+| `--color-accent-heat` | `#FF6B1A` | **보조 포인트 (오렌지)** — 칼로리, RPE 高, 운동 중 타이머 |
+| `--color-text-primary` | `#FFFFFF` | 주 텍스트 |
+| `--color-text-secondary` | `#888888` | 보조 텍스트 |
+
+- [x] **토큰 정의** — Tailwind CSS v4 `@theme` 블록 + shadcn CSS 변수(`--background`, `--primary`, `--ring` 등) 매핑
+- [x] **전역 배경 적용** — `body` / `#root` 다크 배경 적용, 하드코딩된 `bg-white` / `text-black` 제거
+
+#### 컴포넌트 순차 적용
+
+- [x] **BottomNav** — 활성 탭에 `primary(lime)` 컬러 적용 (토큰 자동 반영)
+- [x] **카드 컴포넌트** — `surface(#1A1A1A)` 배경 + `border(#2A2A2A)` 구분선
+- [x] **버튼 Primary** — 네온 라임 배경 + 다크 텍스트
+- [x] **포인트/스트릭 요소** — Flame 아이콘, 스트릭 배너에 `accent-heat` 적용
+- [x] **RPE 슬라이더** — 1-3 lime(쉬움) → 4-6 lime(보통) → 7-8 heat-orange(힘듦) → 9-10 red 그라데이션
+- [ ] **타이포그래피** — 다크 배경 위 가독성 검증 (명도 대비 WCAG AA 기준)
+
+#### 완료 기준
+
+- 전체 화면이 다크 배경으로 통일되고, 포인트 컬러가 주요 인터랙션 요소에 일관되게 적용된다.
+- 하드코딩된 `bg-white`, `text-black` 등 라이트 전용 클래스가 제거된다.
+- 레퍼런스 이미지와 실제 앱 색감이 육안으로 일치한다.
+
 ---
 
 ## 5. Phase 2 — 백엔드 API + DB

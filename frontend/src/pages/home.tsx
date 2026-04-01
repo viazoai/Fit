@@ -350,7 +350,7 @@ export default function HomePage() {
                         </span>
                       </p>
                       <div className="flex items-center gap-1 justify-end mt-0.5">
-                        <Flame className="size-3 text-orange-500" />
+                        <Flame className="size-3 text-accent-heat" />
                         <span className="text-xs text-muted-foreground">
                           RPE {workout.overallRpe}
                         </span>

@@ -295,9 +295,9 @@ function CalendarMode() {
   return (
     <div className="space-y-4">
       {streak > 0 && (
-        <div className="flex items-center gap-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 px-4 py-2.5">
-          <Flame className="size-5 text-orange-500 shrink-0" />
-          <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+        <div className="flex items-center gap-2 rounded-xl bg-accent-heat/10 border border-accent-heat/30 px-4 py-2.5">
+          <Flame className="size-5 text-accent-heat shrink-0" />
+          <p className="text-sm font-semibold text-accent-heat">
             {streak}일 연속 운동 중!
           </p>
         </div>

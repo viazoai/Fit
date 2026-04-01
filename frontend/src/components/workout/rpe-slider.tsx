@@ -41,11 +41,11 @@ export function RpeSlider({
               "flex-1 h-9 rounded-lg text-xs font-medium transition-colors",
               n <= value
                 ? n <= 3
-                  ? "bg-green-500/80 text-white"
+                  ? "bg-primary/60 text-primary-foreground"
                   : n <= 6
-                  ? "bg-yellow-500/80 text-white"
+                  ? "bg-primary text-primary-foreground"
                   : n <= 8
-                  ? "bg-orange-500/80 text-white"
+                  ? "bg-accent-heat/80 text-white"
                   : "bg-red-500/80 text-white"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
