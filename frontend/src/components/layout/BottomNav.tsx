@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Home, ClipboardList, Dumbbell, ShoppingBag, MoreHorizontal } from "lucide-react"
+import { Home, ClipboardList, Flame, ShoppingBag, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -12,7 +12,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", icon: Home, to: "/" },
   { label: "Log", icon: ClipboardList, to: "/log" },
-  { label: "Workout", icon: Dumbbell, to: "/workout", center: true },
+  { label: "Workout", icon: Flame, to: "/workout", center: true },
   { label: "Shop", icon: ShoppingBag, to: "/shop" },
   { label: "More", icon: MoreHorizontal, to: "/more" },
 ]
@@ -55,10 +55,10 @@ export default function BottomNav() {
               <div
                 className={cn(
                   "flex size-12 items-center justify-center rounded-full transition-colors",
-                  isActive ? "bg-primary" : "bg-primary/15"
+                  isActive ? "bg-accent-heat" : "bg-accent-heat/15"
                 )}
               >
-                <Icon className={cn("size-6", isActive ? "text-primary-foreground" : "text-primary")} />
+                <Icon className={cn("size-6", isActive ? "text-white" : "text-accent-heat")} />
               </div>
             ) : (
               <>

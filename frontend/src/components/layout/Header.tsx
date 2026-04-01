@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom"
-import { Dumbbell, Coins } from "lucide-react"
+import { Dumbbell, Flame } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { mockUsers } from "@/mocks"
 import { cn } from "@/lib/utils"
 import { usePoints } from "@/context/points-context"
+import { useWorkouts } from "@/context/workout-context"
+import { calcStreak, getToday } from "@/lib/date-utils"
 
 interface HeaderProps {
   currentUserId?: string
@@ -13,7 +15,10 @@ interface HeaderProps {
 export default function Header({ currentUserId = "user-1", onUserSwitch }: HeaderProps) {
   const currentUser = mockUsers.find((u) => u.id === currentUserId) ?? mockUsers[0]
   const { getBalance } = usePoints()
+  const { workouts } = useWorkouts()
   const balance = getBalance(currentUserId)
+  const today = getToday()
+  const streak = calcStreak(currentUserId, today, workouts)
 
   return (
     <header
@@ -30,10 +35,36 @@ export default function Header({ currentUserId = "user-1", onUserSwitch }: Heade
       </Link>
 
       <div className="flex items-center gap-3">
-        {/* 포인트 */}
-        <Link to="/shop" className="flex items-center gap-1 text-sm font-semibold tabular-nums text-muted-foreground hover:text-foreground transition-colors">
-          <Coins className="size-3.5 text-primary" />
-          {balance.toLocaleString()}P
+        {/* 스트릭 + 포인트 */}
+        <Link
+          to="/shop"
+          className="flex items-center gap-2 text-sm tabular-nums hover:opacity-80 transition-opacity"
+        >
+          {/* 스트릭 */}
+          <div className="flex items-center gap-1">
+            <Flame
+              className={cn(
+                "size-4 transition-colors",
+                streak > 0 ? "text-accent-heat" : "text-muted-foreground"
+              )}
+            />
+            <span
+              className={cn(
+                "font-semibold",
+                streak > 0 ? "text-accent-heat" : "text-muted-foreground"
+              )}
+            >
+              {streak}일
+            </span>
+          </div>
+
+          {/* 구분 */}
+          <span className="text-border">|</span>
+
+          {/* 포인트 */}
+          <span className="font-semibold text-primary">
+            {balance.toLocaleString()}P
+          </span>
         </Link>
 
         {/* 사용자 아바타 (클릭 시 전환) */}

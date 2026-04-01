@@ -65,6 +65,34 @@ export function formatDuration(startedAt: string, finishedAt: string): string {
 }
 
 /**
+ * 연속 운동일(스트릭) 계산
+ */
+export function calcStreak(
+  userId: string,
+  today: string,
+  allWorkouts: { userId: string; date: string }[]
+): number {
+  const dates = allWorkouts
+    .filter((w) => w.userId === userId)
+    .map((w) => w.date)
+    .sort((a, b) => b.localeCompare(a))
+  if (dates.length === 0) return 0
+  let streak = 0
+  let checkMs = new Date(today).getTime()
+  for (let i = 0; i < 365; i++) {
+    const checkStr = new Date(checkMs).toISOString().split("T")[0]
+    if (dates.includes(checkStr)) {
+      streak++
+      checkMs -= 86400000
+    } else {
+      if (i === 0) { checkMs -= 86400000; continue }
+      break
+    }
+  }
+  return streak
+}
+
+/**
  * 초를 "MM:SS" 또는 "H:MM:SS"로 포맷
  */
 export function formatSeconds(totalSec: number): string {

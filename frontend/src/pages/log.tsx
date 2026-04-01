@@ -9,7 +9,7 @@ import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { mockExercises, mockUsers } from "@/mocks"
 import { WEEKDAY_LABELS, WEEK_GOAL } from "@/lib/constants"
-import { getToday, getThisWeekDays, formatDateKo, formatDuration } from "@/lib/date-utils"
+import { getToday, getThisWeekDays, formatDateKo, formatDuration, calcStreak } from "@/lib/date-utils"
 import type { WorkoutSession } from "@/types"
 
 const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
@@ -28,26 +28,6 @@ function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
-function calcStreak(userId: string, today: string, allWorkouts: { userId: string; date: string }[]): number {
-  const dates = allWorkouts
-    .filter((w) => w.userId === userId)
-    .map((w) => w.date)
-    .sort((a, b) => b.localeCompare(a))
-  if (dates.length === 0) return 0
-  let streak = 0
-  let checkMs = new Date(today).getTime()
-  for (let i = 0; i < 365; i++) {
-    const checkStr = new Date(checkMs).toISOString().split("T")[0]
-    if (dates.includes(checkStr)) {
-      streak++
-      checkMs -= 86400000
-    } else {
-      if (i === 0) { checkMs -= 86400000; continue }
-      break
-    }
-  }
-  return streak
-}
 
 function getExerciseName(id: string) {
   return mockExercises.find((e) => e.id === id)?.nameKo ?? id
