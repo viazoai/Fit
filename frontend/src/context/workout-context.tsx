@@ -1,12 +1,22 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import type { WorkoutSession } from "@/types"
+import type { WorkoutSession, Exercise, ActiveExercise } from "@/types"
 import { mockWorkouts } from "@/mocks"
+
+interface SessionState {
+  step: "select-exercises" | "logging"
+  selectedExercises: Exercise[]
+  activeExercises: ActiveExercise[]
+  startedAt: string
+}
 
 interface WorkoutContextValue {
   workouts: WorkoutSession[]
   addWorkout: (session: WorkoutSession) => void
   isWorkoutActive: boolean
   setWorkoutActive: (active: boolean) => void
+  session: SessionState | null
+  setSession: (state: SessionState) => void
+  clearSession: () => void
 }
 
 const WorkoutContext = createContext<WorkoutContextValue | null>(null)
@@ -14,13 +24,32 @@ const WorkoutContext = createContext<WorkoutContextValue | null>(null)
 export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [workouts, setWorkouts] = useState<WorkoutSession[]>(mockWorkouts)
   const [isWorkoutActive, setWorkoutActive] = useState(false)
+  const [session, setSessionState] = useState<SessionState | null>(null)
 
-  function addWorkout(session: WorkoutSession) {
-    setWorkouts((prev) => [session, ...prev])
+  function addWorkout(s: WorkoutSession) {
+    setWorkouts((prev) => [s, ...prev])
+  }
+
+  function setSession(state: SessionState) {
+    setSessionState(state)
+  }
+
+  function clearSession() {
+    setSessionState(null)
   }
 
   return (
-    <WorkoutContext value={{ workouts, addWorkout, isWorkoutActive, setWorkoutActive }}>
+    <WorkoutContext
+      value={{
+        workouts,
+        addWorkout,
+        isWorkoutActive,
+        setWorkoutActive,
+        session,
+        setSession,
+        clearSession,
+      }}
+    >
       {children}
     </WorkoutContext>
   )

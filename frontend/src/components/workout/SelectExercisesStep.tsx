@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronLeft, Search, CheckCircle2 } from "lucide-react"
+import { Search, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -38,10 +38,8 @@ function FilterChip({ active, onClick, children }: FilterChipProps) {
 }
 
 export function SelectExercisesStep({
-  onBack,
   onConfirm,
 }: {
-  onBack: () => void
   onConfirm: (exercises: Exercise[]) => void
 }) {
   const [search, setSearch] = useState("")
@@ -85,12 +83,7 @@ export function SelectExercisesStep({
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-24">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={onBack}>
-          <ChevronLeft />
-        </Button>
-        <h2 className="text-lg font-bold">운동을 선택하세요</h2>
-      </div>
+      <h1 className="text-xl font-bold">Workout</h1>
 
       {/* 검색 */}
       <div className="relative">

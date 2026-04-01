@@ -2,7 +2,6 @@ import type { ReactNode } from "react"
 import { useLocation } from "react-router-dom"
 import Header from "./Header"
 import BottomNav from "./BottomNav"
-import FloatingActionButton from "./FloatingActionButton"
 
 interface AppShellProps {
   children: ReactNode
@@ -28,7 +27,6 @@ export default function AppShell({
           {children}
         </div>
       </main>
-      <FloatingActionButton />
       <BottomNav />
     </div>
   )

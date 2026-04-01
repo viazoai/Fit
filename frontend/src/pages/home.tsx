@@ -62,14 +62,11 @@ export default function HomePage() {
   return (
     <div className="px-4 py-4 space-y-4">
       {/* 헤더 인사 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
-          <h1 className="text-xl font-bold">
-            안녕하세요, {currentUser.nickname}님 👋
-          </h1>
-        </div>
-        <Avatar name={currentUser.nickname} size="md" />
+      <div className="pt-[100px]">
+        <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
+        <h1 className="text-xl font-bold">
+          안녕하세요, {currentUser.nickname}님 👋
+        </h1>
       </div>
 
       {/* 오늘의 운동 요약 카드 */}
@@ -131,7 +128,7 @@ export default function HomePage() {
                 아직 운동을 시작하지 않았어요
               </p>
               <p className="text-xs text-muted-foreground">
-                화면 우측 하단의 + 버튼을 눌러 운동을 기록하세요
+                하단 Workout 탭에서 운동을 시작해보세요!
               </p>
             </div>
           )}
@@ -277,7 +274,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Link
-                to="/calendar"
+                to="/log"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronRight className="size-4" />
@@ -297,7 +294,7 @@ export default function HomePage() {
                 <CardTitle className="text-base">최근 운동 기록</CardTitle>
               </div>
               <Link
-                to="/calendar"
+                to="/log"
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
               >
                 전체 보기

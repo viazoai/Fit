@@ -35,7 +35,7 @@
 ```
 Phase 0  프로젝트 부트스트랩         ✅ 완료
 Phase 1  프론트엔드 코어 UI          ✅ 완료
-Phase 1.5  UI 보완 + 노션 데이터 연동  ← 지금 여기 (1.5-1 ✅ 완료, 1.5-2 미착수)
+Phase 1.5  UI 보완 + 노션 데이터 연동  ✅ 1.5-1, 1.5-2 완료 / 1.5-3 미착수 ← 지금 여기
 Phase 2  백엔드 API + DB
 Phase 3  프론트-백 연동
 Phase 4  AI 에이전트 통합
@@ -157,57 +157,94 @@ frontend/
 
 **목표:** Phase 2 진입 전에 UI 완성도를 높이고, 노션에 축적된 실제 데이터를 Mock에 반영
 
-### 1.5-1. UI/UX 보완
+### 1.5-1. UI/UX 보완 ✅ 완료
 
 > 상세 계획: `.claude/plans/synchronous-yawning-aurora.md`
 
-#### 완료
+<details>
+<summary>완료 항목 (클릭하여 펼치기)</summary>
 
-- [x] 공유 상수/유틸 추출 (`src/lib/constants.ts`, `src/lib/date-utils.ts`)
-  - `BODY_PART_KO`, `DIFFICULTY_KO`, `EQUIPMENT_KO` 등 4개 페이지 중복 제거
-  - `getToday()`, `getThisWeekDays()`, `formatDateKo()` 등 날짜 유틸 통합
-- [x] 날짜 하드코딩 제거 — `home.tsx`, `calendar.tsx`의 `TODAY = "2026-03-31"` → 동적 계산
-- [x] "다시 기록하기" 버튼 수정 — 홈 이동 → 부위 선택 화면으로 재시작
-- [x] 세션 내 운동 데이터 보존 (`src/context/workout-context.tsx`)
-  - 운동 완료 시 context에 저장, 홈/캘린더에서 즉시 반영
-  - 브라우저 새로고침 시 리셋 (Phase 2 DB로 대체 예정)
-- [x] 프로필 저장 → Context 반영 (`user-context.tsx`에 `updateUser()` 추가)
-- [x] Toast 알림 시스템 (`src/context/toast-context.tsx`) — 프로필 저장 등에 사용
-- [x] 라이브러리 바텀시트 → Dialog 컴포넌트 전환 (포커스 트랩, Escape 키 지원)
-- [x] "더보기" 메뉴 페이지 신설 (`src/pages/more.tsx`)
-  - 라이브러리/프로필/리포트 링크 메뉴 구조
-  - BottomNav 활성 상태 로직 수정 (하위 경로 포함)
-- [x] Textarea UI 컴포넌트 생성 (`src/components/ui/textarea.tsx`) + 프로필 적용
-- [x] **다중 부위 운동 선택** — `workout-log.tsx` `SelectMuscleStep`을 다중 선택으로 변경, `SelectExercisesStep`에서 복수 부위 운동을 섹션 헤더로 그룹핑
-- [x] **세트 입력 자동 채움** — `workout-log.tsx` `LoggingStep`에서 운동 탭 전환 시 이전 세트의 무게/RPE를 자동 입력 (`useEffect` on `currentIndex`)
-- [x] **RPE 슬라이더 커스텀** — `src/components/workout/rpe-slider.tsx` 생성, 1~10 색상 구간 버튼으로 네이티브 `<input type="range">` 대체
+- [x] 공유 상수/유틸 추출, 날짜 하드코딩 제거, 세션 내 운동 데이터 보존 (Context)
+- [x] 프로필 저장 Context 반영, Toast 알림 시스템, Dialog 컴포넌트 전환
+- [x] "더보기" 메뉴 신설, Textarea UI, 다중 부위 운동 선택, 세트 입력 자동 채움
+- [x] RPE 슬라이더 커스텀, BottomNav 영문화 (Home/Workout/Calendar/More)
+- [x] FAB 운동 시작 버튼, 인바디 레이더 차트 (SVG), 운동 카드 펼침/접힘
+- [x] 운동 중 종목 추가/삭제, 과거 기록 자동 입력, 트렌드 그래프, 타이머 영속성
+- [x] 캘린더/더보기 타이틀 영문화, 파트너 설정 분리, 인바디 메뉴 추가
 
-#### 공통
-- [x] 아래 버튼들을 영문으로 변경 → Home / Workout / Calendar / More (WU-1)
-- [x] '운동 시작하기' 버튼은 우측 아래 원형 FAB 버튼으로 적용 (WU-1)
+</details>
 
-#### 홈(Home)
-- [x] 다각형 다이어그램 형태로 인바디 기반의 체성분 분석결과를 볼 수 있도록 시각화 카드 제공 → 순수 SVG 레이더 차트 구현 (`components/charts/RadarChart.tsx`) (WU-6)
+### 1.5-2. 라우팅 재구성 + Shop 메뉴 추가
 
-#### 운동 기록 (Workout)
-- [x] 목록 카드를 누르면 운동 세부현황을 볼 수 있도록 → 카드 클릭 시 세트별 무게×횟수 테이블 펼침/접힘 (WU-4)
-- [x] 상단 타이틀 'Workout'로 교체 (WU-2)
-- [x] '운동 시작하기' 버튼 클릭 시 전체 목록 리스트 + 부위별/기구별 필터 칩 화면으로 변경 (WU-4)
-- [x] 운동 중 종목 추가/삭제 — `+` 버튼으로 Dialog 피커, 탭 `×` 버튼으로 삭제 (WU-5)
-- [x] 과거 기록 기반 무게/횟수/강도 자동 입력 — 현재 세션 세트 없을 때 히스토리에서 채움 (WU-5)
-- [x] 운동 트렌드 그래프(미니 바 차트) + YouTube 영상 링크 버튼 (WU-6)
-- [x] 타이머 영속성 (앱 종료/새로고침 후에도 유지) + 일시정지 버튼 — `timer-storage.ts` (WU-5)
+#### 라우팅 & 네비게이션 재설계
 
-#### 캘린터 (Calendar)
-- [x] 상단 타이틀 'Calendar'로 교체 (WU-2)
+기존 4탭(Home/Workout/Calendar/More)을 **5탭**으로 재구성하고, 라우트 역할을 명확히 분리한다.
 
-#### 더보기 (More)
-- [x] 상단 타이틀 'More'로 교체 (WU-2/WU-3)
-- [x] 프로필 설정에서 파트너 설정은 별도 메뉴(`/partner`)로 이동, 앱정보 삭제 (WU-3)
-- [x] '인바디' 메뉴 추가 (`/inbody`, placeholder 페이지) (WU-3)
+**BottomNav:** Home / Log / **Workout** / Shop / More
 
+- `/` — Home
+- `/log` — 운동 기록 조회 (리스트/캘린더 모드 전환)
+- `/workout` — 운동 진행 (종목 선택 → 세트 입력 → 완료)
+- `/shop` — 아이템샵
+- `/more` — 더보기
 
-### 1.5-2. 노션 데이터 연동
+| 변경 사항 | 설명 |
+|-----------|------|
+| **FAB 버튼 제거** | 기존 우측 하단 플로팅 버튼 삭제, Workout 탭이 그 역할을 대체 |
+| **Workout 탭 강조** | 중앙 배치 + 아이콘/크기 강조 (핵심 액션) |
+| **Calendar 탭 제거** | Log 탭의 캘린더 모드로 통합 |
+| **운동 세션 상태 Context 승격** | 진행 중인 운동의 step/선택 종목/입력 데이터를 WorkoutContext로 이동하여, `/workout` ↔ 다른 탭 이동 시에도 세션 유지 |
+
+#### 1.5-2a. Log 탭 (`/log`) — 운동 기록 조회 ✅ 완료
+
+기존 workout-log.tsx의 목록 + calendar.tsx를 하나의 Log 탭으로 통합한다.
+
+- [x] **모드 전환 버튼** — Log 페이지 우측 상단에 리스트/캘린더 토글 버튼 배치 (아이콘 전환)
+- [x] **리스트 모드 (기본)**
+  - 상단: 이번 주 운동 현황 요약 카드 (현재 홈 화면의 주간 현황 카드 재사용)
+  - 하단: 기존 운동 기록 목록 (카드 펼침/접힘 유지)
+- [x] **캘린더 모드**
+  - 상단: 월간 캘린더 (기존 calendar.tsx 로직 재사용)
+  - 하단: 선택 날짜의 운동 기록을 **리스트 모드와 동일한 카드 UI**로 표시
+  - 캘린더 날짜 셀에는 사용자 **이름만** 표시 (기존 부위 태그 대신)
+- [x] **라우팅 정리** — `/calendar` 경로 제거, 기존 workout-log.tsx에서 목록 부분을 `/log`로 분리
+
+#### 1.5-2b. Workout 탭 (`/workout`) — 운동 진행 ✅ 완료
+
+기존 workout-log.tsx의 운동 진행 플로우(종목 선택 → 세트 입력 → 완료)를 독립 라우트로 분리한다.
+
+- [x] **운동 세션 상태 Context 승격** — step, 선택 종목, 세트 데이터를 WorkoutContext로 이동
+- [x] **진행 중 표시** — Workout 탭 아이콘에 운동 중일 때 인디케이터 표시
+- [x] **탭 이동 후 복귀** — 다른 탭 갔다 돌아오면 진행 중인 세션 이어서 기록
+- [x] 내부 step은 기존과 동일 (select-exercises → logging → complete)
+
+#### 1.5-2c. Shop 탭 (`/shop`) — 게이미피케이션 ✅ 완료
+
+게이미피케이션 상세 기획은 `docs/GAMIFICATION.md` 참조.
+
+##### 포인트 시스템 (프론트엔드 Mock)
+- [x] 포인트 획득 규칙 구현 (세션 완료 100P, 스트릭 보너스, 커플 보너스)
+- [x] 포인트 잔액 표시 — 홈 화면 상단 + Shop 화면 상단
+- [x] 운동 완료 시 획득 포인트 카드 (+XP 표시)
+- [x] 스트릭/커플 보너스 축하 토스트
+
+##### 아이템샵 화면 (`/shop`)
+- [x] 카드 그리드 아이템 목록 (이름, 가격, 구매 버튼)
+- [x] 기본 아이템 5종 Mock 데이터 (카페 800P, 디저트 1000P, 치킨 1500P, 외식 2000P, 편의점 500P)
+- [x] 포인트 부족 시 버튼 비활성화 + 부족 금액 표시
+- [x] 커스텀 아이템 추가/수정/삭제 UI
+
+##### 내 인벤토리 화면 (`/shop/inventory`)
+- [x] 보유 쿠폰 리스트 (미사용/사용완료/환불 필터)
+- [x] "사용하기" 버튼 → 확인 다이얼로그
+- [x] 미사용 쿠폰 환불 (100% 포인트 반환)
+
+##### 포인트 히스토리 (`/shop/history`)
+- [x] 시간순 내역 리스트 (날짜, 사유, +/- 포인트, 잔액)
+
+> **참고:** Phase 1.5에서는 Context + localStorage 기반 Mock으로 구현. Phase 2에서 백엔드 DB(`points_ledger`, `shop_items`, `user_coupons` 테이블)로 전환 예정.
+
+### 1.5-3. 노션 데이터 연동
 
 - [ ] 노션에서 운동 데이터 export (운동 종목, 기록 등)
 - [ ] Mock 데이터를 실제 노션 데이터로 교체
@@ -466,22 +503,32 @@ services:
 ## 11. 화면 구조 (Screen Map)
 
 ```
-[하단 탭 네비게이션]
-├── 홈 (/)
+[하단 5탭 네비게이션]  Home / Log / ★Workout★ / Shop / More
+│
+├── Home (/)
 │   ├── 오늘의 요약 카드
+│   ├── 보유 포인트 표시
 │   ├── AI 추천 루틴 (Phase 4)
 │   └── 파트너 활동 (Phase 5)
 │
-├── 기록 (/workout)
-│   ├── 운동 시작 → 세션 생성 플로우
-│   ├── 최근 기록 목록
-│   └── 기록 상세/편집
+├── Log (/log)
+│   ├── 모드 전환 (리스트 ↔ 캘린더) — 우측 상단 토글
+│   ├── [리스트 모드] 이번 주 현황 카드 + 운동 기록 목록
+│   └── [캘린더 모드] 월간 뷰 + 선택 날짜 기록 카드
 │
-├── 캘린더 (/calendar)
-│   ├── 월간 뷰 (부부 색상 구분, Phase 5)
-│   └── 일별 운동 요약
+├── Workout (/workout) — 중앙 강조 탭
+│   ├── 종목 선택 (step: select-exercises)
+│   ├── 세트 입력 (step: logging)
+│   └── 완료 요약 (step: complete)
+│   ※ 진행 중 세션은 Context로 유지, 탭 이동해도 보존
 │
-└── 더보기 (/settings)
+├── Shop (/shop)
+│   ├── 아이템샵 (카드 그리드, 구매)
+│   ├── 내 인벤토리 (/shop/inventory)
+│   ├── 포인트 히스토리 (/shop/history)
+│   └── 커스텀 아이템 관리
+│
+└── More (/more)
     ├── 라이브러리 (/library)
     │   ├── 운동 카드 목록 (필터/검색)
     │   └── 운동 상세 (영상, 설명)

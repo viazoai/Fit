@@ -1,21 +1,23 @@
 import { Link, useLocation } from "react-router-dom"
-import { Home, Dumbbell, Calendar, MoreHorizontal } from "lucide-react"
+import { Home, ClipboardList, Dumbbell, ShoppingBag, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
   label: string
   icon: React.ElementType
   to: string
+  center?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", icon: Home, to: "/" },
-  { label: "Workout", icon: Dumbbell, to: "/workout" },
-  { label: "Calendar", icon: Calendar, to: "/calendar" },
-  { label: "More", icon: MoreHorizontal, to: "/settings" },
+  { label: "Log", icon: ClipboardList, to: "/log" },
+  { label: "Workout", icon: Dumbbell, to: "/workout", center: true },
+  { label: "Shop", icon: ShoppingBag, to: "/shop" },
+  { label: "More", icon: MoreHorizontal, to: "/more" },
 ]
 
-const MORE_PATHS = ["/settings", "/library", "/profile", "/report", "/partner", "/inbody"]
+const MORE_PATHS = ["/more", "/library", "/profile", "/report", "/partner", "/inbody"]
 
 export default function BottomNav() {
   const { pathname } = useLocation()
@@ -28,11 +30,11 @@ export default function BottomNav() {
         "border-t border-border bg-background"
       )}
     >
-      {NAV_ITEMS.map(({ label, icon: Icon, to }) => {
+      {NAV_ITEMS.map(({ label, icon: Icon, to, center }) => {
         const isActive =
           to === "/"
             ? pathname === "/"
-            : to === "/settings"
+            : to === "/more"
             ? MORE_PATHS.some((p) => pathname.startsWith(p))
             : pathname.startsWith(to)
 
@@ -49,8 +51,21 @@ export default function BottomNav() {
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
           >
-            <Icon className="size-5" />
-            <span>{label}</span>
+            {center ? (
+              <div
+                className={cn(
+                  "flex size-12 items-center justify-center rounded-full transition-colors",
+                  isActive ? "bg-primary" : "bg-primary/15"
+                )}
+              >
+                <Icon className={cn("size-6", isActive ? "text-primary-foreground" : "text-primary")} />
+              </div>
+            ) : (
+              <>
+                <Icon className="size-5" />
+                <span>{label}</span>
+              </>
+            )}
           </Link>
         )
       })}

@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { CheckCircle2 } from "lucide-react"
+import { CheckCircle2, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { formatSeconds } from "@/lib/date-utils"
-import type { Exercise } from "@/types"
-import type { ActiveExercise } from "./LoggingStep"
+import type { Exercise, ActiveExercise } from "@/types"
+import type { EarnResult } from "@/context/points-context"
 
 export function CompleteStep({
   exercises,
@@ -20,13 +20,23 @@ export function CompleteStep({
   elapsedSec: number
   onGoHome: () => void
   onRestart: () => void
-  onSave: (memo: string) => void
+  onSave: (memo: string) => EarnResult | null
 }) {
   const [memo, setMemo] = useState("")
   const [saved, setSaved] = useState(false)
+  const [earnResult, setEarnResult] = useState<EarnResult | null>(null)
 
   const totalSets = activeExercises.reduce((sum, ae) => sum + ae.sets.length, 0)
   const exerciseCount = activeExercises.filter((ae) => ae.sets.length > 0).length
+
+  function handleSaveAndGo() {
+    if (!saved) {
+      const result = onSave(memo)
+      setSaved(true)
+      setEarnResult(result)
+    }
+    onGoHome()
+  }
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-24">
@@ -83,29 +93,50 @@ export function CompleteStep({
         </Card>
       )}
 
+      {/* 포인트 획득 카드 (저장 후 표시) */}
+      {saved && earnResult && earnResult.totalEarned > 0 && (
+        <Card className="border-primary/30 bg-primary/5 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+          <CardContent className="pt-4 pb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Coins className="size-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">
+                +{earnResult.totalEarned.toLocaleString()}P 획득!
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              {earnResult.breakdown.map(({ reason, amount }) => (
+                <div key={reason} className="flex justify-between text-xs text-muted-foreground">
+                  <span>{reason}</span>
+                  <span className="font-medium text-primary">+{amount}P</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {saved && (!earnResult || earnResult.totalEarned === 0) && (
+        <p className="text-xs text-center text-muted-foreground">
+          오늘은 이미 포인트를 받았어요 (하루 1회)
+        </p>
+      )}
+
       {/* 메모 */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium">메모 (선택)</label>
-        <Input
-          placeholder="오늘 운동 메모를 남겨보세요..."
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
-        />
-      </div>
+      {!saved && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">메모 (선택)</label>
+          <Input
+            placeholder="오늘 운동 메모를 남겨보세요..."
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+          />
+        </div>
+      )}
 
       {/* 하단 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex flex-col gap-2 px-4">
-        <Button
-          className="w-full"
-          onClick={() => {
-            if (!saved) {
-              onSave(memo)
-              setSaved(true)
-            }
-            onGoHome()
-          }}
-        >
-          홈으로 가기
+        <Button className="w-full" onClick={handleSaveAndGo}>
+          {saved ? "홈으로 가기" : "저장하고 홈으로"}
         </Button>
         <Button variant="outline" className="w-full" onClick={onRestart}>
           다시 기록하기

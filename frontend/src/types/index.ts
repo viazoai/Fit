@@ -48,6 +48,19 @@ export interface WorkoutSession {
   sets: WorkoutSet[]
 }
 
+export interface ActiveSet {
+  exerciseId: string
+  setNumber: number
+  weightKg: number
+  reps: number
+  rpe: number
+}
+
+export interface ActiveExercise {
+  exerciseId: string
+  sets: ActiveSet[]
+}
+
 export interface User {
   id: string
   nickname: string
@@ -60,4 +73,33 @@ export interface User {
   fitnessGoal?: string
   equipment?: string[]
   injuries?: string
+}
+
+export interface ShopItem {
+  id: string
+  name: string
+  description?: string
+  price: number
+  isCustom: boolean
+}
+
+export interface UserCoupon {
+  id: string
+  userId: string
+  itemId: string
+  itemName: string
+  price: number
+  purchasedAt: string
+  status: "unused" | "used" | "refunded"
+  usedAt?: string
+}
+
+export interface PointLedgerEntry {
+  id: string
+  userId: string
+  amount: number
+  reason: string
+  balance: number
+  date: string
+  createdAt: string
 }

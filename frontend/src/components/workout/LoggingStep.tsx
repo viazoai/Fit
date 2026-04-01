@@ -27,20 +27,9 @@ import { useCurrentUser } from "@/context/user-context"
 import { mockExercises } from "@/mocks"
 import { BODY_PART_KO, BODY_PARTS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import type { Exercise, WorkoutSession } from "@/types"
+import type { Exercise, WorkoutSession, ActiveSet, ActiveExercise } from "@/types"
 
-export interface ActiveSet {
-  exerciseId: string
-  setNumber: number
-  weightKg: number
-  reps: number
-  rpe: number
-}
-
-export interface ActiveExercise {
-  exerciseId: string
-  sets: ActiveSet[]
-}
+export type { ActiveSet, ActiveExercise }
 
 // H: 과거 기록에서 마지막 세트를 찾아 반환
 function getLastHistoricalSet(
@@ -226,19 +215,31 @@ function ExercisePickerDialog({
 
 export function LoggingStep({
   exercises: initialExercises,
+  initialActiveExercises,
   onComplete,
+  onActiveExercisesChange,
 }: {
   exercises: Exercise[]
+  initialActiveExercises?: ActiveExercise[]
   onComplete: (activeExercises: ActiveExercise[], elapsedSec: number) => void
+  onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
 }) {
   const { workouts } = useWorkouts()
   const { currentUserId } = useCurrentUser()
 
   // G: exercises를 내부 state로 전환
   const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises)
-  const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() =>
-    initialExercises.map((e) => ({ exerciseId: e.id, sets: [] }))
-  )
+  const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
+    if (initialActiveExercises && initialActiveExercises.length > 0) {
+      return initialActiveExercises
+    }
+    return initialExercises.map((e) => ({ exerciseId: e.id, sets: [] }))
+  })
+
+  function updateActiveExercises(updated: ActiveExercise[]) {
+    setActiveExercises(updated)
+    onActiveExercisesChange?.(updated)
+  }
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showPicker, setShowPicker] = useState(false)
 
@@ -310,8 +311,8 @@ export function LoggingStep({
       rpe,
     }
 
-    setActiveExercises((prev) =>
-      prev.map((ae, i) =>
+    updateActiveExercises(
+      activeExercises.map((ae, i) =>
         i === currentIndex ? { ...ae, sets: [...ae.sets, newSet] } : ae
       )
     )
@@ -319,8 +320,8 @@ export function LoggingStep({
   }
 
   function removeLastSet() {
-    setActiveExercises((prev) =>
-      prev.map((ae, i) =>
+    updateActiveExercises(
+      activeExercises.map((ae, i) =>
         i === currentIndex && ae.sets.length > 0
           ? { ...ae, sets: ae.sets.slice(0, -1) }
           : ae
@@ -331,13 +332,13 @@ export function LoggingStep({
   // G: 운동 추가
   function handleAddExercise(exercise: Exercise) {
     setCurrentExercises((prev) => [...prev, exercise])
-    setActiveExercises((prev) => [...prev, { exerciseId: exercise.id, sets: [] }])
+    updateActiveExercises([...activeExercises, { exerciseId: exercise.id, sets: [] }])
   }
 
   // G: 운동 삭제
   function handleRemoveExercise(index: number) {
     setCurrentExercises((prev) => prev.filter((_, i) => i !== index))
-    setActiveExercises((prev) => prev.filter((_, i) => i !== index))
+    updateActiveExercises(activeExercises.filter((_, i) => i !== index))
     setCurrentIndex((prev) => Math.min(prev, currentExercises.length - 2))
   }
 
