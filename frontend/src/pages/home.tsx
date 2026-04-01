@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { mockExercises } from "@/mocks"
-import { BODY_PART_KO, WEEK_GOAL, WEEKDAY_LABELS } from "@/lib/constants"
+import { BODY_PART_KO, WEEK_GOAL } from "@/lib/constants"
 import { getToday, getThisWeekDays, getDaysAgo, formatDateKo } from "@/lib/date-utils"
 import { RadarChart } from "@/components/charts/RadarChart"
 
