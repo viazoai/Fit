@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { Dumbbell } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { mockUsers } from "@/mocks"
@@ -20,10 +21,10 @@ export default function Header({ currentUserId = "user-1", onUserSwitch }: Heade
       )}
     >
       {/* 로고 */}
-      <div className="flex items-center gap-2">
+      <Link to="/" className="flex items-center gap-2">
         <Dumbbell className="size-5 text-primary" />
         <span className="text-base font-bold tracking-tight">Fit</span>
-      </div>
+      </Link>
 
       {/* 사용자 아바타 (클릭 시 전환) */}
       <button

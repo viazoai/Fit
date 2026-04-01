@@ -1,37 +1,23 @@
 import { useState } from "react"
-import { Search, X, ExternalLink } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { Search, X, ExternalLink, ChevronLeft } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { mockExercises } from "@/mocks"
+import { BODY_PART_KO, DIFFICULTY_KO, DIFFICULTY_VARIANT, EQUIPMENT_KO } from "@/lib/constants"
 import type { Exercise, BodyPart } from "@/types"
-
-const BODY_PART_KO: Record<string, string> = {
-  chest: "가슴",
-  back: "등",
-  shoulder: "어깨",
-  legs: "하체",
-  arms: "팔",
-  core: "코어",
-  cardio: "유산소",
-}
-
-const DIFFICULTY_KO: Record<string, string> = {
-  beginner: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-}
-
-const EQUIPMENT_KO: Record<string, string> = {
-  barbell: "바벨",
-  dumbbell: "덤벨",
-  cable: "케이블",
-  machine: "머신",
-  bodyweight: "맨몸",
-  "pull-up bar": "철봉",
-}
 
 type FilterBodyPart = BodyPart | "all"
 
@@ -46,17 +32,8 @@ const FILTER_TABS: { value: FilterBodyPart; label: string }[] = [
   { value: "cardio", label: "유산소" },
 ]
 
-const DIFFICULTY_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
-  beginner: "secondary",
-  intermediate: "default",
-  advanced: "outline",
-}
-
-function getDifficultyVariant(difficulty: string): "default" | "secondary" | "outline" {
-  return DIFFICULTY_VARIANT[difficulty] ?? "secondary"
-}
-
 export default function LibraryPage() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBodyPart, setSelectedBodyPart] = useState<FilterBodyPart>("all")
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
@@ -75,7 +52,12 @@ export default function LibraryPage() {
     <div className="flex flex-col h-full">
       {/* 검색 + 필터 */}
       <div className="px-4 pt-4 pb-2 space-y-3">
-        <h1 className="text-xl font-bold">운동 라이브러리</h1>
+        <div className="flex items-center gap-1">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="size-5" />
+          </button>
+          <h1 className="text-xl font-bold">운동 라이브러리</h1>
+        </div>
 
         {/* 검색 Input */}
         <div className="relative">
@@ -148,7 +130,7 @@ export default function LibraryPage() {
                       <Badge variant="secondary" className="text-xs">
                         {BODY_PART_KO[exercise.bodyPart] ?? exercise.bodyPart}
                       </Badge>
-                      <Badge variant={getDifficultyVariant(exercise.difficulty)} className="text-xs">
+                      <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="text-xs">
                         {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
                       </Badge>
                     </div>
@@ -172,42 +154,24 @@ export default function LibraryPage() {
         )}
       </div>
 
-      {/* 운동 상세 모달 (Bottom Sheet) */}
-      {selectedExercise && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-end"
-          onClick={() => setSelectedExercise(null)}
-        >
-          <div
-            className="bg-background rounded-t-2xl w-full p-6 max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 상단 핸들 */}
-            <div className="flex justify-center mb-4">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
-            </div>
-
-            {/* 헤더 */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1 min-w-0 pr-4">
-                <h2 className="text-lg font-bold">{selectedExercise.nameKo}</h2>
-                <p className="text-sm text-muted-foreground">{selectedExercise.nameEn}</p>
-              </div>
-              <button
-                onClick={() => setSelectedExercise(null)}
-                className="shrink-0 p-1 rounded-full hover:bg-muted text-muted-foreground"
-                aria-label="닫기"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
+      {/* 운동 상세 모달 */}
+      <Dialog
+        open={!!selectedExercise}
+        onOpenChange={(open) => { if (!open) setSelectedExercise(null) }}
+      >
+        {selectedExercise && (
+          <DialogContent className="max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedExercise.nameKo}</DialogTitle>
+              <DialogDescription>{selectedExercise.nameEn}</DialogDescription>
+            </DialogHeader>
 
             {/* 배지 + 장비 */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">
                 {BODY_PART_KO[selectedExercise.bodyPart] ?? selectedExercise.bodyPart}
               </Badge>
-              <Badge variant={getDifficultyVariant(selectedExercise.difficulty)}>
+              <Badge variant={DIFFICULTY_VARIANT[selectedExercise.difficulty] ?? "secondary"}>
                 {DIFFICULTY_KO[selectedExercise.difficulty] ?? selectedExercise.difficulty}
               </Badge>
               <span className="inline-flex items-center h-5 px-2 text-xs text-muted-foreground bg-muted rounded-full">
@@ -215,10 +179,10 @@ export default function LibraryPage() {
               </span>
             </div>
 
-            <Separator className="mb-4" />
+            <Separator />
 
             {/* 근육 정보 */}
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2">
               <div className="flex gap-2">
                 <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">주동근</span>
                 <span className="text-sm">{selectedExercise.primaryMuscle}</span>
@@ -234,7 +198,7 @@ export default function LibraryPage() {
             {/* 운동 설명 */}
             {selectedExercise.description && (
               <>
-                <Separator className="mb-4" />
+                <Separator />
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {selectedExercise.description}
                 </p>
@@ -243,7 +207,7 @@ export default function LibraryPage() {
 
             {/* YouTube 링크 */}
             {selectedExercise.youtubeUrl && (
-              <div className="mt-4">
+              <div>
                 <a
                   href={selectedExercise.youtubeUrl}
                   target="_blank"
@@ -256,19 +220,14 @@ export default function LibraryPage() {
               </div>
             )}
 
-            {/* 닫기 버튼 */}
-            <div className="mt-6">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setSelectedExercise(null)}
-              >
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" className="w-full" />}>
                 닫기
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   )
 }

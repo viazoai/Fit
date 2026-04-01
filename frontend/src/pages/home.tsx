@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
-import { Flame, TrendingUp, Calendar, ChevronRight } from "lucide-react"
-import { buttonVariants } from "@/components/ui/button"
+import { Flame, TrendingUp, Calendar, ChevronRight, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -8,53 +7,24 @@ import { Avatar } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
-import { mockWorkouts, mockExercises } from "@/mocks"
+import { useWorkouts } from "@/context/workout-context"
+import { mockExercises } from "@/mocks"
+import { BODY_PART_KO, WEEK_GOAL, WEEKDAY_LABELS } from "@/lib/constants"
+import { getToday, getThisWeekDays, getDaysAgo, formatDateKo } from "@/lib/date-utils"
+import { RadarChart } from "@/components/charts/RadarChart"
 
-const TODAY = "2026-03-31"
-const WEEK_GOAL = 4
-
-// 이번 주: 2026-03-30(월) ~ 2026-04-05(일)
-const THIS_WEEK_DAYS = [
-  "2026-03-30",
-  "2026-03-31",
-  "2026-04-01",
-  "2026-04-02",
-  "2026-04-03",
-  "2026-04-04",
-  "2026-04-05",
-]
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"]
-
-const BODY_PART_KO: Record<string, string> = {
-  chest: "가슴",
-  back: "등",
-  shoulder: "어깨",
-  legs: "하체",
-  arms: "팔",
-  core: "코어",
-  cardio: "유산소",
-}
-
-function getDaysAgo(dateStr: string): number {
-  const target = new Date(dateStr)
-  const today = new Date(TODAY)
-  const diff = today.getTime() - target.getTime()
-  return Math.floor(diff / (1000 * 60 * 60 * 24))
-}
-
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split("-").map(Number)
-  const d = new Date(year, month - 1, day)
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
-  return `${month}월 ${day}일 (${weekdays[d.getDay()]})`
-}
+const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
+  const { workouts } = useWorkouts()
+
+  const today = getToday()
+  const thisWeekDays = getThisWeekDays(today)
 
   // 오늘 나의 운동
-  const todayWorkout = mockWorkouts.find(
-    (w) => w.userId === currentUser.id && w.date === TODAY
+  const todayWorkout = workouts.find(
+    (w) => w.userId === currentUser.id && w.date === today
   )
 
   // 오늘 운동한 종목 목록
@@ -66,21 +36,21 @@ export default function HomePage() {
   )
 
   // 이번 주 운동한 날
-  const myWorkoutsThisWeek = THIS_WEEK_DAYS.filter((day) =>
-    mockWorkouts.some((w) => w.userId === currentUser.id && w.date === day)
+  const myWorkoutsThisWeek = thisWeekDays.filter((day) =>
+    workouts.some((w) => w.userId === currentUser.id && w.date === day)
   )
 
   // 파트너 최근 운동
   const partnerWorkouts = partner
-    ? mockWorkouts
+    ? workouts
         .filter((w) => w.userId === partner.id)
         .sort((a, b) => b.date.localeCompare(a.date))
     : []
   const partnerLatest = partnerWorkouts[0]
 
   // 나의 최근 운동 (오늘 제외, 최대 3개)
-  const recentWorkouts = mockWorkouts
-    .filter((w) => w.userId === currentUser.id && w.date !== TODAY)
+  const recentWorkouts = workouts
+    .filter((w) => w.userId === currentUser.id && w.date !== today)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3)
 
@@ -94,7 +64,7 @@ export default function HomePage() {
       {/* 헤더 인사 */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">{formatDate(TODAY)}</p>
+          <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
           <h1 className="text-xl font-bold">
             안녕하세요, {currentUser.nickname}님 👋
           </h1>
@@ -160,12 +130,9 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground">
                 아직 운동을 시작하지 않았어요
               </p>
-              <Link
-                to="/workout"
-                className={cn(buttonVariants({ variant: "default" }), "w-full")}
-              >
-                운동 시작하기
-              </Link>
+              <p className="text-xs text-muted-foreground">
+                화면 우측 하단의 + 버튼을 눌러 운동을 기록하세요
+              </p>
             </div>
           )}
         </CardContent>
@@ -195,11 +162,11 @@ export default function HomePage() {
           <Progress value={weekProgress} />
           {/* 요일별 도트 */}
           <div className="flex items-center justify-between pt-1">
-            {THIS_WEEK_DAYS.map((day, i) => {
-              const worked = mockWorkouts.some(
+            {thisWeekDays.map((day, i) => {
+              const worked = workouts.some(
                 (w) => w.userId === currentUser.id && w.date === day
               )
-              const isToday = day === TODAY
+              const isToday = day === today
               return (
                 <div key={day} className="flex flex-col items-center gap-1.5">
                   <div
@@ -216,7 +183,7 @@ export default function HomePage() {
                         : "text-muted-foreground"
                     )}
                   >
-                    {WEEKDAY_LABELS[i]}
+                    {WEEKDAY_LABELS_MON[i]}
                   </span>
                 </div>
               )
@@ -225,20 +192,73 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
+      {/* 체성분 분석 */}
+      {(currentUser.muscleMassKg != null || currentUser.bodyFatPct != null) && (() => {
+        const bmi =
+          currentUser.weightKg && currentUser.heightCm
+            ? currentUser.weightKg / Math.pow(currentUser.heightCm / 100, 2)
+            : 0
+
+        const radarData = [
+          { label: "체중", value: currentUser.weightKg ?? 0, max: 100 },
+          { label: "골격근", value: currentUser.muscleMassKg ?? 0, max: 50 },
+          { label: "체지방↓", value: currentUser.bodyFatPct ? 100 - currentUser.bodyFatPct : 0, max: 100 },
+          { label: "BMI", value: bmi, max: 30 },
+          { label: "키", value: currentUser.heightCm ?? 0, max: 200 },
+        ]
+
+        return (
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Activity className="size-4 text-primary" />
+                <CardTitle className="text-base">체성분 분석</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-3">
+              <RadarChart data={radarData} size={180} />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground w-full px-2">
+                {currentUser.muscleMassKg && (
+                  <div className="flex justify-between">
+                    <span>골격근량</span>
+                    <span className="font-medium text-foreground">{currentUser.muscleMassKg}kg</span>
+                  </div>
+                )}
+                {currentUser.bodyFatPct && (
+                  <div className="flex justify-between">
+                    <span>체지방률</span>
+                    <span className="font-medium text-foreground">{currentUser.bodyFatPct}%</span>
+                  </div>
+                )}
+                {bmi > 0 && (
+                  <div className="flex justify-between">
+                    <span>BMI</span>
+                    <span className="font-medium text-foreground">{bmi.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
+
       {/* 파트너 활동 미리보기 */}
       {partner && partnerLatest && (
         <Card className="bg-muted/50">
-          <CardContent className="pt-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">파트너 현황</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
             <div className="flex items-center gap-3">
               <Avatar name={partner.nickname} size="md" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
                   {partner.nickname}
-                  {partnerLatest.date === TODAY
+                  {partnerLatest.date === today
                     ? "이(가) 오늘 운동했어요! 🎉"
-                    : getDaysAgo(partnerLatest.date) === 1
+                    : getDaysAgo(partnerLatest.date, today) === 1
                     ? "이(가) 어제 운동했어요"
-                    : `이(가) ${getDaysAgo(partnerLatest.date)}일 전 운동했어요`}
+                    : `이(가) ${getDaysAgo(partnerLatest.date, today)}일 전 운동했어요`}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
                   {[
@@ -293,7 +313,7 @@ export default function HomePage() {
               const exercises = exerciseIds
                 .map((id) => mockExercises.find((e) => e.id === id))
                 .filter(Boolean)
-              const daysAgo = getDaysAgo(workout.date)
+              const daysAgo = getDaysAgo(workout.date, today)
 
               return (
                 <div key={workout.id}>
@@ -302,7 +322,7 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          {formatDate(workout.date)}
+                          {formatDateKo(workout.date)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {daysAgo === 1 ? "어제" : `${daysAgo}일 전`}

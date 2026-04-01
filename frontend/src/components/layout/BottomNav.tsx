@@ -9,11 +9,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "홈", icon: Home, to: "/" },
-  { label: "기록", icon: Dumbbell, to: "/workout" },
-  { label: "캘린더", icon: Calendar, to: "/calendar" },
-  { label: "더보기", icon: MoreHorizontal, to: "/settings" },
+  { label: "Home", icon: Home, to: "/" },
+  { label: "Workout", icon: Dumbbell, to: "/workout" },
+  { label: "Calendar", icon: Calendar, to: "/calendar" },
+  { label: "More", icon: MoreHorizontal, to: "/settings" },
 ]
+
+const MORE_PATHS = ["/settings", "/library", "/profile", "/report", "/partner", "/inbody"]
 
 export default function BottomNav() {
   const { pathname } = useLocation()
@@ -28,7 +30,11 @@ export default function BottomNav() {
     >
       {NAV_ITEMS.map(({ label, icon: Icon, to }) => {
         const isActive =
-          to === "/" ? pathname === "/" : pathname.startsWith(to)
+          to === "/"
+            ? pathname === "/"
+            : to === "/settings"
+            ? MORE_PATHS.some((p) => pathname.startsWith(p))
+            : pathname.startsWith(to)
 
         return (
           <Link

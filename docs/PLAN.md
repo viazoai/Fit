@@ -1,6 +1,6 @@
 # Fit (A-Fit) 개발 계획
 
-> 최종 수정: 2026-03-31
+> 최종 수정: 2026-04-01
 
 ## 목차
 1. [개발 원칙](#1-개발-원칙)
@@ -35,7 +35,7 @@
 ```
 Phase 0  프로젝트 부트스트랩         ✅ 완료
 Phase 1  프론트엔드 코어 UI          ✅ 완료
-Phase 1.5  UI 보완 + 노션 데이터 연동  ← 지금 여기
+Phase 1.5  UI 보완 + 노션 데이터 연동  ← 지금 여기 (1.5-1 ✅ 완료, 1.5-2 미착수)
 Phase 2  백엔드 API + DB
 Phase 3  프론트-백 연동
 Phase 4  AI 에이전트 통합
@@ -159,7 +159,53 @@ frontend/
 
 ### 1.5-1. UI/UX 보완
 
-- [ ] 사용자 피드백 기반 화면 개선 (피드백 수합 후 반영)
+> 상세 계획: `.claude/plans/synchronous-yawning-aurora.md`
+
+#### 완료
+
+- [x] 공유 상수/유틸 추출 (`src/lib/constants.ts`, `src/lib/date-utils.ts`)
+  - `BODY_PART_KO`, `DIFFICULTY_KO`, `EQUIPMENT_KO` 등 4개 페이지 중복 제거
+  - `getToday()`, `getThisWeekDays()`, `formatDateKo()` 등 날짜 유틸 통합
+- [x] 날짜 하드코딩 제거 — `home.tsx`, `calendar.tsx`의 `TODAY = "2026-03-31"` → 동적 계산
+- [x] "다시 기록하기" 버튼 수정 — 홈 이동 → 부위 선택 화면으로 재시작
+- [x] 세션 내 운동 데이터 보존 (`src/context/workout-context.tsx`)
+  - 운동 완료 시 context에 저장, 홈/캘린더에서 즉시 반영
+  - 브라우저 새로고침 시 리셋 (Phase 2 DB로 대체 예정)
+- [x] 프로필 저장 → Context 반영 (`user-context.tsx`에 `updateUser()` 추가)
+- [x] Toast 알림 시스템 (`src/context/toast-context.tsx`) — 프로필 저장 등에 사용
+- [x] 라이브러리 바텀시트 → Dialog 컴포넌트 전환 (포커스 트랩, Escape 키 지원)
+- [x] "더보기" 메뉴 페이지 신설 (`src/pages/more.tsx`)
+  - 라이브러리/프로필/리포트 링크 메뉴 구조
+  - BottomNav 활성 상태 로직 수정 (하위 경로 포함)
+- [x] Textarea UI 컴포넌트 생성 (`src/components/ui/textarea.tsx`) + 프로필 적용
+- [x] **다중 부위 운동 선택** — `workout-log.tsx` `SelectMuscleStep`을 다중 선택으로 변경, `SelectExercisesStep`에서 복수 부위 운동을 섹션 헤더로 그룹핑
+- [x] **세트 입력 자동 채움** — `workout-log.tsx` `LoggingStep`에서 운동 탭 전환 시 이전 세트의 무게/RPE를 자동 입력 (`useEffect` on `currentIndex`)
+- [x] **RPE 슬라이더 커스텀** — `src/components/workout/rpe-slider.tsx` 생성, 1~10 색상 구간 버튼으로 네이티브 `<input type="range">` 대체
+
+#### 공통
+- [x] 아래 버튼들을 영문으로 변경 → Home / Workout / Calendar / More (WU-1)
+- [x] '운동 시작하기' 버튼은 우측 아래 원형 FAB 버튼으로 적용 (WU-1)
+
+#### 홈(Home)
+- [x] 다각형 다이어그램 형태로 인바디 기반의 체성분 분석결과를 볼 수 있도록 시각화 카드 제공 → 순수 SVG 레이더 차트 구현 (`components/charts/RadarChart.tsx`) (WU-6)
+
+#### 운동 기록 (Workout)
+- [x] 목록 카드를 누르면 운동 세부현황을 볼 수 있도록 → 카드 클릭 시 세트별 무게×횟수 테이블 펼침/접힘 (WU-4)
+- [x] 상단 타이틀 'Workout'로 교체 (WU-2)
+- [x] '운동 시작하기' 버튼 클릭 시 전체 목록 리스트 + 부위별/기구별 필터 칩 화면으로 변경 (WU-4)
+- [x] 운동 중 종목 추가/삭제 — `+` 버튼으로 Dialog 피커, 탭 `×` 버튼으로 삭제 (WU-5)
+- [x] 과거 기록 기반 무게/횟수/강도 자동 입력 — 현재 세션 세트 없을 때 히스토리에서 채움 (WU-5)
+- [x] 운동 트렌드 그래프(미니 바 차트) + YouTube 영상 링크 버튼 (WU-6)
+- [x] 타이머 영속성 (앱 종료/새로고침 후에도 유지) + 일시정지 버튼 — `timer-storage.ts` (WU-5)
+
+#### 캘린터 (Calendar)
+- [x] 상단 타이틀 'Calendar'로 교체 (WU-2)
+
+#### 더보기 (More)
+- [x] 상단 타이틀 'More'로 교체 (WU-2/WU-3)
+- [x] 프로필 설정에서 파트너 설정은 별도 메뉴(`/partner`)로 이동, 앱정보 삭제 (WU-3)
+- [x] '인바디' 메뉴 추가 (`/inbody`, placeholder 페이지) (WU-3)
+
 
 ### 1.5-2. 노션 데이터 연동
 
@@ -265,6 +311,13 @@ backend/
 - [ ] MET 계수 × 체중 × 시간 → 소모 칼로리 자동 산출
 - [ ] 운동 완료 시 요약 화면에 표시
 
+### 4-4. 인바디 체성분 자동 입력
+
+- [ ] 인바디 결과지 사진 촬영/업로드 UI (프로필 또는 더보기 메뉴)
+- [ ] AI(GPT Vision)로 결과지 OCR → 체중, 골격근량, 체지방률 등 자동 파싱
+- [ ] 파싱 결과 확인/수정 화면 → `body_records` 테이블에 저장
+- [ ] 체성분 변화 추이 그래프 (리포트 탭 연동)
+
 ---
 
 ## 8. Phase 5 — Duo-Sync (부부 공유)
@@ -297,8 +350,8 @@ backend/
 
 ### 6-1. PWA 설정
 
-- [ ] `manifest.json` (앱 이름, 아이콘, 색상)
-- [ ] Service Worker (오프라인 캐싱)
+- [x] `manifest.json` (앱 이름, 아이콘, 색상)
+- [x] Service Worker (오프라인 캐싱)
 - [ ] 홈 화면 설치 프롬프트
 
 ### 6-2. Docker Compose

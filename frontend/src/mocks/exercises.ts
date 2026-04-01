@@ -12,6 +12,7 @@ export const mockExercises: Exercise[] = [
     exerciseType: "strength",
     difficulty: "intermediate",
     equipment: "barbell",
+    youtubeUrl: "https://www.youtube.com/results?search_query=벤치프레스+폼+튜토리얼",
     description: "바벨을 이용한 기본 가슴 운동. 가슴 근육 전체를 자극한다.",
   },
   {
@@ -72,6 +73,7 @@ export const mockExercises: Exercise[] = [
     exerciseType: "strength",
     difficulty: "intermediate",
     equipment: "bodyweight",
+    youtubeUrl: "https://www.youtube.com/results?search_query=풀업+폼+튜토리얼",
     description: "자체 체중을 이용한 등 운동의 왕. 광배근 발달에 탁월하다.",
   },
   {
@@ -120,6 +122,7 @@ export const mockExercises: Exercise[] = [
     exerciseType: "strength",
     difficulty: "advanced",
     equipment: "barbell",
+    youtubeUrl: "https://www.youtube.com/results?search_query=데드리프트+폼+튜토리얼",
     description: "전신 복합 운동. 등 하부와 둔근에 강한 자극을 준다.",
   },
   // 어깨
@@ -169,6 +172,7 @@ export const mockExercises: Exercise[] = [
     exerciseType: "strength",
     difficulty: "intermediate",
     equipment: "barbell",
+    youtubeUrl: "https://www.youtube.com/results?search_query=스쿼트+폼+튜토리얼",
     description: "하체 운동의 왕. 대퇴사두근과 둔근을 강하게 자극한다.",
   },
   {

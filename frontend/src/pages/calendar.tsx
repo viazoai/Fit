@@ -7,21 +7,10 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
-import { mockWorkouts, mockExercises, mockUsers } from "@/mocks"
-
-const TODAY = "2026-03-31"
-
-const BODY_PART_KO: Record<string, string> = {
-  chest: "가슴",
-  back: "등",
-  shoulder: "어깨",
-  legs: "하체",
-  arms: "팔",
-  core: "코어",
-  cardio: "유산소",
-}
-
-const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"]
+import { useWorkouts } from "@/context/workout-context"
+import { mockExercises, mockUsers } from "@/mocks"
+import { BODY_PART_KO, WEEKDAY_LABELS } from "@/lib/constants"
+import { getToday } from "@/lib/date-utils"
 
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate()
@@ -37,8 +26,8 @@ function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${m}-${d}`
 }
 
-function calcStreak(userId: string): number {
-  const dates = mockWorkouts
+function calcStreak(userId: string, today: string, allWorkouts: { userId: string; date: string }[]): number {
+  const dates = allWorkouts
     .filter((w) => w.userId === userId)
     .map((w) => w.date)
     .sort((a, b) => b.localeCompare(a))
@@ -46,7 +35,7 @@ function calcStreak(userId: string): number {
   if (dates.length === 0) return 0
 
   let streak = 0
-  const todayMs = new Date(TODAY).getTime()
+  const todayMs = new Date(today).getTime()
   let checkMs = todayMs
 
   for (let i = 0; i < 365; i++) {
@@ -69,14 +58,16 @@ function calcStreak(userId: string): number {
 
 export default function CalendarPage() {
   const { currentUser } = useCurrentUser()
+  const { workouts } = useWorkouts()
 
-  const todayDate = new Date(TODAY)
+  const today = getToday()
+  const todayDate = new Date(today)
   const [viewYear, setViewYear] = useState(todayDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth()) // 0-indexed
 
-  const [selectedDate, setSelectedDate] = useState<string>(TODAY)
+  const [selectedDate, setSelectedDate] = useState<string>(today)
 
-  const streak = calcStreak(currentUser.id)
+  const streak = calcStreak(currentUser.id, today, workouts)
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDayOfWeek = getFirstDayOfMonth(viewYear, viewMonth) // 0=일
@@ -113,11 +104,13 @@ export default function CalendarPage() {
 
   // 선택한 날짜의 운동 (user-1, user-2 모두)
   const selectedWorkouts = selectedDate
-    ? mockWorkouts.filter((w) => w.date === selectedDate)
+    ? workouts.filter((w) => w.date === selectedDate)
     : []
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 pt-4 pb-4 space-y-4">
+      <h1 className="text-xl font-bold">Calendar</h1>
+
       {/* 스트릭 배너 */}
       {streak > 0 && (
         <div className="flex items-center gap-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 px-4 py-2.5">
@@ -176,14 +169,14 @@ export default function CalendarPage() {
               }
 
               const dateStr = toDateStr(viewYear, viewMonth, day)
-              const isToday = dateStr === TODAY
+              const isToday = dateStr === today
               const isSelected = dateStr === selectedDate
 
               // 각 사용자 운동 여부
-              const user1Worked = mockWorkouts.some(
+              const user1Worked = workouts.some(
                 (w) => w.userId === "user-1" && w.date === dateStr
               )
-              const user2Worked = mockWorkouts.some(
+              const user2Worked = workouts.some(
                 (w) => w.userId === "user-2" && w.date === dateStr
               )
 

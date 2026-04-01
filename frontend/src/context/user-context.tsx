@@ -9,24 +9,32 @@ interface UserContextValue {
   partner: User
   currentUserId: UserId
   switchUser: () => void
+  updateUser: (updates: Partial<User>) => void
 }
 
 const UserContext = createContext<UserContextValue | null>(null)
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const [users, setUsers] = useState<User[]>(mockUsers)
   const [currentUserId, setCurrentUserId] = useState<UserId>("user-1")
 
-  const currentUser =
-    mockUsers.find((u) => u.id === currentUserId) ?? mockUsers[0]
-  const partner =
-    mockUsers.find((u) => u.id !== currentUserId) ?? mockUsers[1]
+  const currentUser = users.find((u) => u.id === currentUserId) ?? users[0]
+  const partner = users.find((u) => u.id !== currentUserId) ?? users[1]
 
   function switchUser() {
     setCurrentUserId((prev) => (prev === "user-1" ? "user-2" : "user-1"))
   }
 
+  function updateUser(updates: Partial<User>) {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === currentUserId ? { ...u, ...updates } : u
+      )
+    )
+  }
+
   return (
-    <UserContext value={{ currentUser, partner, currentUserId, switchUser }}>
+    <UserContext value={{ currentUser, partner, currentUserId, switchUser, updateUser }}>
       {children}
     </UserContext>
   )

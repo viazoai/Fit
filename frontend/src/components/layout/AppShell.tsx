@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { useLocation } from "react-router-dom"
 import Header from "./Header"
 import BottomNav from "./BottomNav"
+import FloatingActionButton from "./FloatingActionButton"
 
 interface AppShellProps {
   children: ReactNode
@@ -19,7 +20,7 @@ export default function AppShell({
   return (
     <div className="flex flex-col min-h-svh bg-background">
       <Header currentUserId={currentUserId} onUserSwitch={onUserSwitch} />
-      <main className="flex-1 overflow-y-auto pb-20 pt-14">
+      <main className="flex-1 overflow-y-auto pb-20">
         <div
           key={location.pathname}
           className="animate-in fade-in-0 duration-200"
@@ -27,6 +28,7 @@ export default function AppShell({
           {children}
         </div>
       </main>
+      <FloatingActionButton />
       <BottomNav />
     </div>
   )
