@@ -37,7 +37,12 @@ export default function Header({ currentUserId = "user-1", onUserSwitch, transpa
 
       <div className="flex items-center gap-3">
         {/* 스트릭 */}
-        <div className="flex items-center gap-1">
+        <div
+          className={cn(
+            "flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors",
+            streak > 0 ? "bg-accent-heat/15" : "bg-muted/50"
+          )}
+        >
           <Flame
             className={cn(
               "size-4 transition-colors",
