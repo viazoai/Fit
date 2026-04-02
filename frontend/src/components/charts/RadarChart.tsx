@@ -82,8 +82,8 @@ export function RadarChart({ data, size = 200 }: RadarChartProps) {
       {/* Data polygon */}
       <path
         d={dataPath}
-        fill="rgb(180 180 180 / 0.18)"
-        stroke="rgb(140 140 140 / 0.7)"
+        fill="rgb(255 107 26 / 0.15)"
+        stroke="rgb(255 107 26 / 0.8)"
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
@@ -98,7 +98,7 @@ export function RadarChart({ data, size = 200 }: RadarChartProps) {
             cx={pt.x}
             cy={pt.y}
             r="3"
-            fill="rgb(140 140 140 / 0.8)"
+            fill="rgb(255 107 26)"
           />
         )
       })}
