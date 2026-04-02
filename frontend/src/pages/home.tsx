@@ -191,7 +191,7 @@ export default function HomePage() {
                   <span>현재</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-0.5 rounded-full bg-primary opacity-70" style={{ backgroundImage: "repeating-linear-gradient(90deg, #CCFF00 0 4px, transparent 4px 7px)" }} />
+                  <div className="w-4 h-0.5" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgb(255 107 26 / 0.5) 0 4px, transparent 4px 7px)" }} />
                   <span>목표</span>
                 </div>
               </div>

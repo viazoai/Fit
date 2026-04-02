@@ -97,8 +97,8 @@ export function RadarChart({ data, size = 200 }: RadarChartProps) {
       {targetPath && (
         <path
           d={targetPath}
-          fill="rgb(204 255 0 / 0.06)"
-          stroke="rgb(204 255 0 / 0.7)"
+          fill="none"
+          stroke="rgb(255 107 26 / 0.5)"
           strokeWidth="1.25"
           strokeDasharray="3 2.5"
           strokeLinejoin="round"
