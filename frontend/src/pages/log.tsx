@@ -1,18 +1,17 @@
 import { useState } from "react"
-import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, TrendingUp, Dumbbell, Zap, Timer, ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, Timer, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { mockExercises, mockUsers } from "@/mocks"
-import { WEEKDAY_LABELS, WEEK_GOAL } from "@/lib/constants"
-import { getToday, getThisWeekDays, formatDateKo, formatDuration, calcStreak } from "@/lib/date-utils"
+import { WEEKDAY_LABELS } from "@/lib/constants"
+import { getToday, formatDateKo, formatDuration, calcStreak } from "@/lib/date-utils"
+import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
 import type { WorkoutSession } from "@/types"
 
-const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
 // ─── 달력 유틸 ───────────────────────────────────────────────────────────────
 
@@ -137,72 +136,6 @@ function WorkoutSessionCard({
   )
 }
 
-// ─── 이번 주 현황 카드 ────────────────────────────────────────────────────────
-
-function WeeklyProgressCard() {
-  const { currentUser } = useCurrentUser()
-  const { workouts } = useWorkouts()
-  const today = getToday()
-  const thisWeekDays = getThisWeekDays(today)
-
-  const myWorkoutsThisWeek = thisWeekDays.filter((day) =>
-    workouts.some((w) => w.userId === currentUser.id && w.date === day)
-  )
-  const weekProgress = Math.min(
-    Math.round((myWorkoutsThisWeek.length / WEEK_GOAL) * 100),
-    100
-  )
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-primary" />
-          <CardTitle className="text-base">이번 주 현황</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          이번 주{" "}
-          <span className="font-semibold text-foreground">{myWorkoutsThisWeek.length}회</span>
-          {" "}운동 · 목표{" "}
-          <span className="font-semibold text-foreground">{WEEK_GOAL}회</span>
-        </p>
-        <div className="flex items-center justify-between text-sm mb-1">
-          <span className="font-medium">진행률</span>
-          <span className="text-muted-foreground tabular-nums">{weekProgress}%</span>
-        </div>
-        <Progress value={weekProgress} />
-        <div className="flex items-center justify-between pt-1">
-          {thisWeekDays.map((day, i) => {
-            const worked = workouts.some(
-              (w) => w.userId === currentUser.id && w.date === day
-            )
-            const isToday = day === today
-            return (
-              <div key={day} className="flex flex-col items-center gap-1.5">
-                <div
-                  className={cn(
-                    "size-3 rounded-full transition-colors",
-                    worked ? "bg-primary" : "bg-muted"
-                  )}
-                />
-                <span
-                  className={cn(
-                    "text-xs",
-                    isToday ? "font-bold text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {WEEKDAY_LABELS_MON[i]}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 // ─── 리스트 모드 ──────────────────────────────────────────────────────────────
 

@@ -1,20 +1,17 @@
 import { useRef } from "react"
 import { Link } from "react-router-dom"
-import { Flame, TrendingUp, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
+import { Flame, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Avatar } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { mockExercises } from "@/mocks"
-import { BODY_PART_KO, WEEK_GOAL } from "@/lib/constants"
-import { getToday, getThisWeekDays, getDaysAgo, formatDateKo } from "@/lib/date-utils"
+import { BODY_PART_KO } from "@/lib/constants"
+import { getToday, getDaysAgo, formatDateKo } from "@/lib/date-utils"
 import { RadarChart } from "@/components/charts/RadarChart"
-
-const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
+import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
 
 const BG_STORAGE_KEY = "fit-home-bg"
 
@@ -36,7 +33,6 @@ export default function HomePage() {
   }
 
   const today = getToday()
-  const thisWeekDays = getThisWeekDays(today)
 
   // 오늘 나의 운동
   const todayWorkout = workouts.find(
@@ -49,11 +45,6 @@ export default function HomePage() {
     : []
   const todayExercises = todayExerciseIds.map((id) =>
     mockExercises.find((e) => e.id === id)
-  )
-
-  // 이번 주 운동한 날
-  const myWorkoutsThisWeek = thisWeekDays.filter((day) =>
-    workouts.some((w) => w.userId === currentUser.id && w.date === day)
   )
 
   // 파트너 최근 운동
@@ -69,11 +60,6 @@ export default function HomePage() {
     .filter((w) => w.userId === currentUser.id && w.date !== today)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3)
-
-  const weekProgress = Math.min(
-    Math.round((myWorkoutsThisWeek.length / WEEK_GOAL) * 100),
-    100
-  )
 
   return (
     <>
@@ -170,58 +156,7 @@ export default function HomePage() {
       </Card>
 
       {/* 이번 주 운동 현황 */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="size-4 text-primary" />
-            <CardTitle className="text-base">이번 주 현황</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            이번 주{" "}
-            <span className="font-semibold text-foreground">
-              {myWorkoutsThisWeek.length}회
-            </span>{" "}
-            운동 · 목표{" "}
-            <span className="font-semibold text-foreground">{WEEK_GOAL}회</span>
-          </p>
-          <div className="flex items-center justify-between text-sm mb-1">
-            <span className="font-medium">진행률</span>
-            <span className="text-muted-foreground tabular-nums">{weekProgress}%</span>
-          </div>
-          <Progress value={weekProgress} />
-          {/* 요일별 불꽃 */}
-          <div className="flex items-center justify-between pt-1">
-            {thisWeekDays.map((day, i) => {
-              const worked = workouts.some(
-                (w) => w.userId === currentUser.id && w.date === day
-              )
-              const isToday = day === today
-              return (
-                <div key={day} className="flex flex-col items-center gap-1">
-                  <Flame
-                    className={cn(
-                      "size-4 transition-colors",
-                      worked ? "text-accent-heat" : "text-muted/50"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "text-xs",
-                      isToday
-                        ? "font-bold text-primary"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {WEEKDAY_LABELS_MON[i]}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <WeeklyProgressCard />
 
       {/* 체성분 분석 */}
       {(currentUser.muscleMassKg != null || currentUser.bodyFatPct != null) && (() => {
