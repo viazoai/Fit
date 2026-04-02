@@ -2,6 +2,7 @@ interface RadarAxis {
   label: string
   value: number
   max: number
+  target?: number  // 목표치 (없으면 목표선 미표시)
 }
 
 interface RadarChartProps {
@@ -44,6 +45,19 @@ export function RadarChart({ data, size = 200 }: RadarChartProps) {
     return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ") + " Z"
   })()
 
+  // Target polygon (목표치가 하나라도 있을 때만 표시)
+  const hasTarget = data.some((d) => d.target != null)
+  const targetPath = hasTarget
+    ? (() => {
+        const pts = data.map((d, i) => {
+          const t = d.target ?? d.value
+          const ratio = d.max > 0 ? Math.min(t / d.max, 1) : 0
+          return pointAt(i, ratio)
+        })
+        return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ") + " Z"
+      })()
+    : null
+
   const labelOffset = 1.18
 
   return (
@@ -78,6 +92,18 @@ export function RadarChart({ data, size = 200 }: RadarChartProps) {
           />
         )
       })}
+
+      {/* Target polygon (라임 점선) */}
+      {targetPath && (
+        <path
+          d={targetPath}
+          fill="rgb(204 255 0 / 0.06)"
+          stroke="rgb(204 255 0 / 0.7)"
+          strokeWidth="1.25"
+          strokeDasharray="3 2.5"
+          strokeLinejoin="round"
+        />
+      )}
 
       {/* Data polygon */}
       <path

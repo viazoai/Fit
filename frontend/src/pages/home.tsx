@@ -166,11 +166,12 @@ export default function HomePage() {
             : 0
 
         const radarData = [
-          { label: "체중", value: currentUser.weightKg ?? 0, max: 100 },
-          { label: "골격근", value: currentUser.muscleMassKg ?? 0, max: 50 },
-          { label: "체지방↓", value: currentUser.bodyFatPct ? 100 - currentUser.bodyFatPct : 0, max: 100 },
-          { label: "BMI", value: bmi, max: 30 },
-          { label: "키", value: currentUser.heightCm ?? 0, max: 200 },
+          // target: 권장 목표치 (체중 65kg, 골격근 35kg, 체지방 15%↓→85, BMI 22, 키 고정)
+          { label: "체중",   value: currentUser.weightKg ?? 0,                               max: 100, target: 65 },
+          { label: "골격근", value: currentUser.muscleMassKg ?? 0,                            max: 50,  target: 35 },
+          { label: "체지방↓",value: currentUser.bodyFatPct ? 100 - currentUser.bodyFatPct : 0, max: 100, target: 85 },
+          { label: "BMI",   value: bmi,                                                       max: 30,  target: 22 },
+          { label: "키",    value: currentUser.heightCm ?? 0,                                max: 200 },
         ]
 
         return (
@@ -183,6 +184,17 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3">
               <RadarChart data={radarData} size={180} />
+              {/* 범례 */}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-0.5 rounded-full bg-accent-heat" />
+                  <span>현재</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-0.5 rounded-full bg-primary opacity-70" style={{ backgroundImage: "repeating-linear-gradient(90deg, #CCFF00 0 4px, transparent 4px 7px)" }} />
+                  <span>목표</span>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground w-full px-2">
                 {currentUser.muscleMassKg && (
                   <div className="flex justify-between">
