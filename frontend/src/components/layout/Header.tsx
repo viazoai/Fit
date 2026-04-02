@@ -9,9 +9,10 @@ import { calcStreak, getToday } from "@/lib/date-utils"
 interface HeaderProps {
   currentUserId?: string
   onUserSwitch?: () => void
+  transparent?: boolean
 }
 
-export default function Header({ currentUserId = "user-1", onUserSwitch }: HeaderProps) {
+export default function Header({ currentUserId = "user-1", onUserSwitch, transparent = false }: HeaderProps) {
   const currentUser = mockUsers.find((u) => u.id === currentUserId) ?? mockUsers[0]
   const { workouts } = useWorkouts()
   const today = getToday()
@@ -22,7 +23,7 @@ export default function Header({ currentUserId = "user-1", onUserSwitch }: Heade
       className={cn(
         "h-14 sticky top-0 z-50",
         "flex items-center justify-between px-4",
-        "border-b border-border bg-background"
+        transparent ? "bg-transparent border-transparent" : "border-b border-border bg-background"
       )}
     >
       {/* 로고 */}
