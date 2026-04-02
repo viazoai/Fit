@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { Link } from "react-router-dom"
 import { Flame, TrendingUp, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,14 +17,10 @@ import { RadarChart } from "@/components/charts/RadarChart"
 const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
 const BG_STORAGE_KEY = "fit-home-bg"
-const DEFAULT_BG = "/home-bg.jpg"
 
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
   const { workouts } = useWorkouts()
-  const [bgImage, setBgImage] = useState<string | null>(
-    () => localStorage.getItem(BG_STORAGE_KEY) ?? DEFAULT_BG
-  )
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleBgChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -32,9 +28,8 @@ export default function HomePage() {
     if (!file) return
     const reader = new FileReader()
     reader.onload = () => {
-      const dataUrl = reader.result as string
-      localStorage.setItem(BG_STORAGE_KEY, dataUrl)
-      setBgImage(dataUrl)
+      localStorage.setItem(BG_STORAGE_KEY, reader.result as string)
+      window.dispatchEvent(new CustomEvent("fit-home-bg-changed"))
     }
     reader.readAsDataURL(file)
     e.target.value = ""
@@ -82,28 +77,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* 고정 배경 이미지 (헤더 뒤~그리팅 직전까지 페이드아웃) */}
-      {bgImage && (
-        <div
-          className="fixed inset-x-0 top-0 h-[360px] pointer-events-none"
-          style={{ zIndex: 1 }}
-        >
-          <img
-            src={bgImage}
-            alt=""
-            aria-hidden
-            className="w-full h-full object-cover object-top"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(15,15,15,0.65) 0%, rgba(15,15,15,0.2) 22%, rgba(15,15,15,0.6) 48%, rgba(15,15,15,0.93) 62%, rgba(15,15,15,1) 78%)",
-            }}
-          />
-        </div>
-      )}
-
     <div className="relative px-4 py-4 space-y-4" style={{ zIndex: 10 }}>
       {/* 헤더 인사 */}
       <div className="pt-[100px] flex items-end justify-between">
