@@ -15,10 +15,11 @@ export default function AppShell({
   onUserSwitch,
 }: AppShellProps) {
   const location = useLocation()
+  const isHome = location.pathname === "/"
 
   return (
     <div className="flex flex-col min-h-svh bg-background">
-      <Header currentUserId={currentUserId} onUserSwitch={onUserSwitch} />
+      <Header currentUserId={currentUserId} onUserSwitch={onUserSwitch} transparent={isHome} />
       <main className="flex-1 overflow-y-auto pb-20">
         <div
           key={location.pathname}

@@ -15,6 +15,13 @@ import { RadarChart } from "@/components/charts/RadarChart"
 
 const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
+/**
+ * 홈 배경 이미지 경로 (public/ 폴더 기준)
+ * 예: "/home-bg.jpg"
+ * 이미지 없으면 null
+ */
+const HOME_BG_IMAGE: string | null = null
+
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
   const { workouts } = useWorkouts()
@@ -60,7 +67,30 @@ export default function HomePage() {
   )
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <>
+      {/* 고정 배경 이미지 (헤더 뒤~그리팅 직전까지 페이드아웃) */}
+      {HOME_BG_IMAGE && (
+        <div
+          className="fixed inset-x-0 top-0 h-[360px] pointer-events-none"
+          style={{ zIndex: 1 }}
+        >
+          <img
+            src={HOME_BG_IMAGE}
+            alt=""
+            aria-hidden
+            className="w-full h-full object-cover object-top"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(15,15,15,0.08) 0%, rgba(15,15,15,0.55) 35%, rgba(15,15,15,0.92) 55%, rgba(15,15,15,1) 75%)",
+            }}
+          />
+        </div>
+      )}
+
+    <div className="relative px-4 py-4 space-y-4" style={{ zIndex: 10 }}>
       {/* 헤더 인사 */}
       <div className="pt-[100px]">
         <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
@@ -364,5 +394,6 @@ export default function HomePage() {
         </Card>
       )}
     </div>
+    </>
   )
 }
