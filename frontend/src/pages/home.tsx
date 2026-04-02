@@ -191,7 +191,7 @@ export default function HomePage() {
             <span className="text-muted-foreground tabular-nums">{weekProgress}%</span>
           </div>
           <Progress value={weekProgress} />
-          {/* 요일별 도트 */}
+          {/* 요일별 불꽃 */}
           <div className="flex items-center justify-between pt-1">
             {thisWeekDays.map((day, i) => {
               const worked = workouts.some(
@@ -199,11 +199,11 @@ export default function HomePage() {
               )
               const isToday = day === today
               return (
-                <div key={day} className="flex flex-col items-center gap-1.5">
-                  <div
+                <div key={day} className="flex flex-col items-center gap-1">
+                  <Flame
                     className={cn(
-                      "size-3 rounded-full transition-colors",
-                      worked ? "bg-primary" : "bg-muted"
+                      "size-4 transition-colors",
+                      worked ? "text-accent-heat" : "text-muted/50"
                     )}
                   />
                   <span

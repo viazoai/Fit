@@ -36,8 +36,8 @@ export default function AppShell({
       {/* 홈 배경 이미지 — 애니메이션 바깥에 위치해 페이지 전환과 무관하게 유지 */}
       {isHome && homeBg && (
         <div
-          className="fixed inset-x-0 top-0 h-[360px] pointer-events-none"
-          style={{ zIndex: 1 }}
+          className="fixed inset-x-0 h-[360px] pointer-events-none"
+          style={{ zIndex: 1, top: 56 }}
         >
           <img
             src={homeBg}
@@ -55,7 +55,7 @@ export default function AppShell({
         </div>
       )}
 
-      <Header currentUserId={currentUserId} onUserSwitch={onUserSwitch} transparent={isHome} />
+      <Header currentUserId={currentUserId} onUserSwitch={onUserSwitch} />
       <main className="flex-1 overflow-y-auto pb-20">
         <div
           key={location.pathname}
