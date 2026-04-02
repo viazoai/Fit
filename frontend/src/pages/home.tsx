@@ -17,12 +17,13 @@ import { RadarChart } from "@/components/charts/RadarChart"
 const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
 const BG_STORAGE_KEY = "fit-home-bg"
+const DEFAULT_BG = "/home-bg.jpg"
 
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
   const { workouts } = useWorkouts()
   const [bgImage, setBgImage] = useState<string | null>(
-    () => localStorage.getItem(BG_STORAGE_KEY)
+    () => localStorage.getItem(BG_STORAGE_KEY) ?? DEFAULT_BG
   )
   const fileInputRef = useRef<HTMLInputElement>(null)
 
