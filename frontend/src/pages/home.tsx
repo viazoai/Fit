@@ -1,5 +1,6 @@
+import { useRef, useState } from "react"
 import { Link } from "react-router-dom"
-import { Flame, TrendingUp, Calendar, ChevronRight, Activity } from "lucide-react"
+import { Flame, TrendingUp, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -15,16 +16,28 @@ import { RadarChart } from "@/components/charts/RadarChart"
 
 const WEEKDAY_LABELS_MON = ["월", "화", "수", "목", "금", "토", "일"]
 
-/**
- * 홈 배경 이미지 경로 (public/ 폴더 기준)
- * 예: "/home-bg.jpg"
- * 이미지 없으면 null
- */
-const HOME_BG_IMAGE: string | null = null
+const BG_STORAGE_KEY = "fit-home-bg"
 
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
   const { workouts } = useWorkouts()
+  const [bgImage, setBgImage] = useState<string | null>(
+    () => localStorage.getItem(BG_STORAGE_KEY)
+  )
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleBgChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      localStorage.setItem(BG_STORAGE_KEY, dataUrl)
+      setBgImage(dataUrl)
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ""
+  }
 
   const today = getToday()
   const thisWeekDays = getThisWeekDays(today)
@@ -69,13 +82,13 @@ export default function HomePage() {
   return (
     <>
       {/* 고정 배경 이미지 (헤더 뒤~그리팅 직전까지 페이드아웃) */}
-      {HOME_BG_IMAGE && (
+      {bgImage && (
         <div
           className="fixed inset-x-0 top-0 h-[360px] pointer-events-none"
           style={{ zIndex: 1 }}
         >
           <img
-            src={HOME_BG_IMAGE}
+            src={bgImage}
             alt=""
             aria-hidden
             className="w-full h-full object-cover object-top"
@@ -92,11 +105,28 @@ export default function HomePage() {
 
     <div className="relative px-4 py-4 space-y-4" style={{ zIndex: 10 }}>
       {/* 헤더 인사 */}
-      <div className="pt-[100px]">
-        <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
-        <h1 className="text-xl font-bold">
-          안녕하세요, {currentUser.nickname}님 👋
-        </h1>
+      <div className="pt-[100px] flex items-end justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
+          <h1 className="text-xl font-bold">
+            안녕하세요, {currentUser.nickname}님 👋
+          </h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="mb-0.5 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          aria-label="홈 배경 사진 변경"
+        >
+          <Pencil className="size-3.5" />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleBgChange}
+        />
       </div>
 
       {/* 오늘의 운동 요약 카드 */}
