@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { Flame, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,19 +14,24 @@ import { RadarChart } from "@/components/charts/RadarChart"
 import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
 
 const BG_STORAGE_KEY = "fit-home-bg"
+const DEFAULT_BG = "/home-bg.jpg"
 
 export default function HomePage() {
   const { currentUser, partner } = useCurrentUser()
   const { workouts } = useWorkouts()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [bgImage, setBgImage] = useState<string | null>(
+    () => localStorage.getItem(BG_STORAGE_KEY) ?? DEFAULT_BG
+  )
 
   function handleBgChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = () => {
-      localStorage.setItem(BG_STORAGE_KEY, reader.result as string)
-      window.dispatchEvent(new CustomEvent("fit-home-bg-changed"))
+      const dataUrl = reader.result as string
+      localStorage.setItem(BG_STORAGE_KEY, dataUrl)
+      setBgImage(dataUrl)
     }
     reader.readAsDataURL(file)
     e.target.value = ""
@@ -62,7 +67,25 @@ export default function HomePage() {
     .slice(0, 3)
 
   return (
-    <>
+    <div className="relative">
+      {bgImage && (
+        <div className="absolute inset-x-0 top-0 h-[280px] overflow-hidden pointer-events-none">
+          <img
+            src={bgImage}
+            alt=""
+            aria-hidden
+            className="w-full h-full object-cover object-top"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(15,15,15,0.5) 0%, rgba(15,15,15,0.15) 25%, rgba(15,15,15,0.7) 55%, rgba(15,15,15,1) 85%)",
+            }}
+          />
+        </div>
+      )}
+
     <div className="relative px-4 py-4 space-y-4" style={{ zIndex: 10 }}>
       {/* 헤더 인사 */}
       <div className="pt-[100px] flex items-end justify-between">
@@ -333,6 +356,6 @@ export default function HomePage() {
         </Card>
       )}
     </div>
-    </>
+    </div>
   )
 }
