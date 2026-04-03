@@ -73,6 +73,13 @@ export async function getMe(): Promise<UserRead> {
   return request<UserRead>("/api/users/me")
 }
 
+export async function updateMe(body: { name?: string; theme?: string }): Promise<UserRead> {
+  return request<UserRead>("/api/users/me", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  })
+}
+
 // ─── Exercises ───────────────────────────────────────────────────────────────
 
 import type { Exercise } from "@/types"

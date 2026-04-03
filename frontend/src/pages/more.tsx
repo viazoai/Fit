@@ -3,9 +3,8 @@ import { BookOpen, UserCircle, BarChart3, Users, Activity, ChevronRight, Monitor
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
-
-type ThemeMode = "system" | "light" | "dark"
+import { useTheme } from "@/context/theme-context"
+import type { ThemeMode } from "@/types"
 
 const THEME_OPTIONS: { value: ThemeMode; icon: typeof Monitor; label: string }[] = [
   { value: "system", icon: Monitor, label: "시스템" },
@@ -49,7 +48,7 @@ const MENU_ITEMS = [
 ]
 
 export default function MorePage() {
-  const [theme, setTheme] = useState<ThemeMode>("dark")
+  const { theme, setTheme } = useTheme()
 
   return (
     <div className="flex flex-col">

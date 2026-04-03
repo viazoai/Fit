@@ -5,6 +5,7 @@ import { ExerciseProvider } from "@/context/exercise-context"
 import { WorkoutProvider } from "@/context/workout-context"
 import { ToastProvider } from "@/context/toast-context"
 import { PointsProvider } from "@/context/points-context"
+import { ThemeProvider } from "@/context/theme-context"
 import AppShell from "@/components/layout/AppShell"
 import HomePage from "@/pages/home"
 import LogPage from "@/pages/log"
@@ -58,17 +59,19 @@ function AuthGate() {
   }
 
   return (
-    <UserProvider>
-      <ExerciseProvider>
-        <WorkoutProvider>
-          <PointsProvider>
-            <ToastProvider>
-              <AppContent />
-            </ToastProvider>
-          </PointsProvider>
-        </WorkoutProvider>
-      </ExerciseProvider>
-    </UserProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <ExerciseProvider>
+          <WorkoutProvider>
+            <PointsProvider>
+              <ToastProvider>
+                <AppContent />
+              </ToastProvider>
+            </PointsProvider>
+          </WorkoutProvider>
+        </ExerciseProvider>
+      </UserProvider>
+    </ThemeProvider>
   )
 }
 

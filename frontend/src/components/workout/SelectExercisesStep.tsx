@@ -19,10 +19,10 @@ function FilterChip({ active, onClick, children }: FilterChipProps) {
     <button
       onClick={onClick}
       className={cn(
-        "shrink-0 h-7 rounded-full px-3 text-xs font-medium border transition-colors",
+        "shrink-0 h-7 rounded-full px-3 text-xs font-medium transition-colors",
         active
-          ? "bg-primary text-primary-foreground border-primary"
-          : "bg-background text-foreground border-border hover:bg-muted"
+          ? "bg-primary text-primary-foreground"
+          : "bg-card text-foreground"
       )}
     >
       {children}
@@ -176,10 +176,10 @@ export function SelectExercisesStep({
                     key={exercise.id}
                     onClick={() => toggleExercise(exercise.id)}
                     className={cn(
-                      "flex items-center justify-between rounded-xl border p-3 text-left transition-colors",
+                      "flex items-center justify-between rounded-xl p-3 text-left transition-colors",
                       isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card hover:border-muted-foreground/30"
+                        ? "border border-primary bg-primary/5"
+                        : "bg-card"
                     )}
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">

@@ -7,7 +7,7 @@ interface UserContextValue {
   currentUserId: number
 }
 
-const fallbackUser: UserRead = { id: 0, name: "...", created_at: "" }
+const fallbackUser: UserRead = { id: 0, name: "...", theme: "dark", created_at: "" }
 
 const UserContext = createContext<UserContextValue | null>(null)
 

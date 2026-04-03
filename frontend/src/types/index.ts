@@ -94,9 +94,12 @@ export interface CalendarResponse {
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
+export type ThemeMode = "system" | "light" | "dark"
+
 export interface UserRead {
   id: number
   name: string
+  theme: ThemeMode
   created_at: string
 }
 

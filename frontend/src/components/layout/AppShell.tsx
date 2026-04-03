@@ -1,10 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { useLocation } from "react-router-dom"
+import { useTheme } from "@/context/theme-context"
 import Header from "./Header"
 import BottomNav from "./BottomNav"
 
 const BG_STORAGE_KEY = "fit-home-bg"
-const DEFAULT_BG = "/home-bg.jpg"
+const DEFAULT_BG_DARK = "/home-bg.jpg"
+const DEFAULT_BG_LIGHT = "/home-bg-light.JPG"
 
 interface AppShellProps {
   children: ReactNode
@@ -17,14 +19,18 @@ export default function AppShell({
 }: AppShellProps) {
   const location = useLocation()
   const isHome = location.pathname === "/"
+  const { theme } = useTheme()
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
 
-  const [homeBg, setHomeBg] = useState<string | null>(
-    () => localStorage.getItem(BG_STORAGE_KEY) ?? DEFAULT_BG
+  const defaultBg = isDark ? DEFAULT_BG_DARK : DEFAULT_BG_LIGHT
+  const [customBg, setCustomBg] = useState<string | null>(
+    () => localStorage.getItem(BG_STORAGE_KEY)
   )
+  const homeBg = customBg ?? defaultBg
 
   useEffect(() => {
     const handler = () =>
-      setHomeBg(localStorage.getItem(BG_STORAGE_KEY) ?? DEFAULT_BG)
+      setCustomBg(localStorage.getItem(BG_STORAGE_KEY))
     window.addEventListener("fit-home-bg-changed", handler)
     return () => window.removeEventListener("fit-home-bg-changed", handler)
   }, [])
@@ -47,8 +53,9 @@ export default function AppShell({
             <div
               className="absolute inset-0"
               style={{
-                background:
-                  "linear-gradient(to bottom, rgba(15,15,15,0.6) 0%, rgba(15,15,15,0.15) 25%, rgba(15,15,15,0.65) 55%, rgba(15,15,15,0.95) 70%, rgba(15,15,15,1) 85%)",
+                background: isDark
+                  ? "linear-gradient(to bottom, rgba(15,15,15,0.6) 0%, rgba(15,15,15,0.15) 25%, rgba(15,15,15,0.65) 55%, rgba(15,15,15,0.95) 70%, rgba(15,15,15,1) 85%)"
+                  : "linear-gradient(to bottom, rgba(242,242,242,0.5) 0%, rgba(242,242,242,0.1) 25%, rgba(242,242,242,0.55) 55%, rgba(242,242,242,0.9) 70%, rgba(242,242,242,1) 85%)",
               }}
             />
           </>

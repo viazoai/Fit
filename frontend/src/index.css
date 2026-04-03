@@ -6,42 +6,74 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    /* ── Dark theme (always on) ── */
-    /* 레이어 구조: background → card(밝음) → muted(카드 내 중첩, 어두움) */
-    --background: #111111;
-    --foreground: #F5F5F5;
-    --card: #1E1E1E;          /* 배경보다 밝게 — border 없이 floating */
-    --card-foreground: #F5F5F5;
-    --popover: #1E1E1E;
-    --popover-foreground: #F5F5F5;
+    /* ── Light theme ── */
+    /* 레이어 구조: background(살짝 회) → card(순백) → muted(카드 내부, 연회) */
+    --background: #F2F2F2;
+    --foreground: #171717;
+    --card: #FFFFFF;
+    --card-foreground: #171717;
+    --popover: #FFFFFF;
+    --popover-foreground: #171717;
 
-    /* Primary = 네온 라임 */
-    --primary: #CCFF00;
-    --primary-foreground: #0F0F0F;
+    /* Primary = 그린 라임 (밝고 선명하되 흰 배경·흰 텍스트 양쪽 대비 확보) */
+    --primary: #4D9E1D;
+    --primary-foreground: #FFFFFF;
 
-    --secondary: #252525;
-    --secondary-foreground: #F5F5F5;
-    --muted: #111111;          /* 카드 안 중첩 요소 — 카드보다 어둡게 */
-    --muted-foreground: #777777;
-    --accent: #252525;
-    --accent-foreground: #F5F5F5;
+    --secondary: #E8E8E8;
+    --secondary-foreground: #171717;
+    --muted: #F2F2F2;          /* 카드 안 중첩 요소 — 배경과 동일 톤 */
+    --muted-foreground: #737373;
+    --accent: #E8E8E8;
+    --accent-foreground: #171717;
 
     --destructive: oklch(0.704 0.191 22.216);
-    --border: #2E2E2E;         /* Separator 등 내부 구분선용 */
-    --input: #111111;
-    --ring: #CCFF00;
+    --border: #E0E0E0;
+    --input: #E8E8E8;
+    --ring: #4D9E1D;
 
-    /* ── 커스텀 토큰 ── */
-    --accent-heat: #FF6B1A;   /* 보조 포인트: 칼로리, RPE 高, 타이머 */
+    --accent-heat: #EA580C;
 
-    /* 차트 */
-    --chart-1: #CCFF00;
-    --chart-2: #FF6B1A;
+    --chart-1: #4D9E1D;
+    --chart-2: #EA580C;
     --chart-3: oklch(0.546 0.245 262.881);
     --chart-4: oklch(0.488 0.243 264.376);
     --chart-5: oklch(0.424 0.199 265.638);
 
     --radius: 0.625rem;
+}
+
+.dark {
+    /* ── Dark theme ── */
+    /* 레이어 구조: background → card(밝음) → muted(카드 내 중첩, 어두움) */
+    --background: #111111;
+    --foreground: #F5F5F5;
+    --card: #1E1E1E;
+    --card-foreground: #F5F5F5;
+    --popover: #1E1E1E;
+    --popover-foreground: #F5F5F5;
+
+    --primary: #CCFF00;
+    --primary-foreground: #0F0F0F;
+
+    --secondary: #252525;
+    --secondary-foreground: #F5F5F5;
+    --muted: #111111;
+    --muted-foreground: #777777;
+    --accent: #252525;
+    --accent-foreground: #F5F5F5;
+
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: #2E2E2E;
+    --input: #111111;
+    --ring: #CCFF00;
+
+    --accent-heat: #FF6B1A;
+
+    --chart-1: #CCFF00;
+    --chart-2: #FF6B1A;
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
 }
 
 @theme inline {
