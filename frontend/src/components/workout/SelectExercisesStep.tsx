@@ -32,8 +32,12 @@ function FilterChip({ active, onClick, children }: FilterChipProps) {
 
 export function SelectExercisesStep({
   onConfirm,
+  onCancel,
+  excludeIds,
 }: {
   onConfirm: (exercises: Exercise[]) => void
+  onCancel?: () => void
+  excludeIds?: Set<number>
 }) {
   const { exercises: allExercises } = useExercises()
   const [search, setSearch] = useState("")
@@ -42,16 +46,19 @@ export function SelectExercisesStep({
   const [equipmentFilter, setEquipmentFilter] = useState<string>("all")
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
+  const isAddMode = !!onCancel
+
   // 운동 타입 / 장비 목록을 데이터에서 동적 추출
   const exerciseTypes = [...new Set(allExercises.map((e) => e.type))].sort()
   const equipmentTypes = [...new Set(
-    allExercises.map((e) => e.equipment).filter((v): v is string => !!v)
+    allExercises.flatMap((e) => e.equipment ?? [])
   )].sort()
 
   const filtered = allExercises.filter((e) => {
+    if (excludeIds?.has(e.id)) return false
     if (muscleFilter !== "all" && e.muscle_group !== muscleFilter) return false
     if (typeFilter !== "all" && e.type !== typeFilter) return false
-    if (equipmentFilter !== "all" && e.equipment !== equipmentFilter) return false
+    if (equipmentFilter !== "all" && !e.equipment?.includes(equipmentFilter)) return false
     if (search) {
       const q = search.toLowerCase()
       if (!e.name.toLowerCase().includes(q)) return false
@@ -105,7 +112,7 @@ export function SelectExercisesStep({
         <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")}>
           전체
         </FilterChip>
-        {exerciseTypes.map((t) => (
+        {exerciseTypes.filter((t) => t !== "맨몸").map((t) => (
           <FilterChip
             key={t}
             active={typeFilter === t}
@@ -133,14 +140,14 @@ export function SelectExercisesStep({
         ))}
       </div>
 
-      {/* 장비 필터 */}
-      {equipmentTypes.length > 0 && (
+      {/* 기구 필터 */}
+      {equipmentTypes.filter((eq) => eq !== "없음").length > 0 && (
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-          <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">장비</span>
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">기구</span>
           <FilterChip active={equipmentFilter === "all"} onClick={() => setEquipmentFilter("all")}>
             전체
           </FilterChip>
-          {equipmentTypes.map((eq) => (
+          {equipmentTypes.filter((eq) => eq !== "없음").map((eq) => (
             <FilterChip
               key={eq}
               active={equipmentFilter === eq}
@@ -198,9 +205,16 @@ export function SelectExercisesStep({
       </div>
 
       {/* 하단 고정 버튼 */}
-      <div className="fixed bottom-20 left-0 right-0 px-4">
-        <Button className="w-full" disabled={selected.size === 0} onClick={handleConfirm}>
-          {selected.size > 0 ? `${selected.size}개 선택 → 운동 시작` : "운동을 선택하세요"}
+      <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
+        {isAddMode && (
+          <Button variant="outline" className="w-24 h-10" onClick={onCancel}>
+            취소
+          </Button>
+        )}
+        <Button className="flex-1 h-10" disabled={selected.size === 0} onClick={handleConfirm}>
+          {selected.size > 0
+            ? `${selected.size}개 선택 → ${isAddMode ? "운동 추가" : "운동 시작"}`
+            : isAddMode ? "운동을 추가하세요" : "운동을 선택하세요"}
         </Button>
       </div>
     </div>

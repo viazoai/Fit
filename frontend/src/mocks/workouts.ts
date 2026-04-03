@@ -9,6 +9,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: "가슴/삼두 운동. 벤치프레스 중량 +2.5kg 성공",
     kcal: 420,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["가슴", "삼두"],
   },
   {
@@ -18,6 +19,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: "등/이두 데이. 데드리프트 컨디션 좋음",
     kcal: 480,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["등", "이두"],
   },
   {
@@ -27,6 +29,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 450,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["하체"],
   },
   // user 1 (형준): 지난 주 4회
@@ -37,6 +40,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 380,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["가슴"],
   },
   {
@@ -46,6 +50,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 400,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["등"],
   },
   {
@@ -55,6 +60,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 460,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["어깨"],
   },
   {
@@ -64,6 +70,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 430,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["하체"],
   },
   // user 2 (윤희): 이번 주 2회
@@ -74,6 +81,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: "전신 운동. 가볍게 시작",
     kcal: 280,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["가슴", "등", "하체"],
   },
   {
@@ -83,6 +91,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 310,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["어깨", "등", "하체"],
   },
   // user 2 (윤희): 지난 주 3회
@@ -93,6 +102,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 260,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["하체", "코어"],
   },
   {
@@ -102,6 +112,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: null,
     kcal: 300,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["등", "어깨", "코어"],
   },
   {
@@ -111,6 +122,7 @@ export const mockWorkouts: WorkoutSessionSummary[] = [
     memo: "전신 마무리 운동",
     kcal: 290,
     exercise_count: 3,
+    duration_min: null,
     muscle_groups: ["가슴", "하체", "등"],
   },
 ]

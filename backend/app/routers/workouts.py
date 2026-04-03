@@ -60,6 +60,7 @@ def list_workouts(
         groups = list({log.exercise.muscle_group for log in s.exercise_logs if log.exercise and log.exercise.muscle_group})
         result.append(WorkoutSessionSummary(
             id=s.id, user_id=s.user_id, date=s.date, memo=s.memo, kcal=s.kcal,
+            duration_min=s.duration_min,
             exercise_count=len(s.exercise_logs), muscle_groups=groups,
         ))
     return result
@@ -90,7 +91,7 @@ def get_workout(session_id: int, db: Session = Depends(get_db), user: User = Dep
 
 @router.post("", response_model=WorkoutSessionRead, status_code=201)
 def create_workout(body: WorkoutSessionCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    session = WorkoutSession(user_id=user.id, date=body.date, memo=body.memo, kcal=body.kcal)
+    session = WorkoutSession(user_id=user.id, date=body.date, memo=body.memo, kcal=body.kcal, duration_min=body.duration_min)
     db.add(session)
     db.flush()
 

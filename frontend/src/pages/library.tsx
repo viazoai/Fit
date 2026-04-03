@@ -167,10 +167,12 @@ export default function LibraryPage() {
                   {DIFFICULTY_KO[selectedExercise.difficulty] ?? selectedExercise.difficulty}
                 </Badge>
               )}
-              {selectedExercise.equipment && (
-                <span className="inline-flex items-center h-5 px-2 text-xs text-muted-foreground bg-muted rounded-full">
-                  {selectedExercise.equipment}
-                </span>
+              {selectedExercise.equipment && selectedExercise.equipment.length > 0 && (
+                selectedExercise.equipment.map((eq) => (
+                  <span key={eq} className="inline-flex items-center h-5 px-2 text-xs text-muted-foreground bg-muted rounded-full">
+                    {eq}
+                  </span>
+                ))
               )}
             </div>
 

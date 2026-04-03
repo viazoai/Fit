@@ -21,7 +21,7 @@ export interface Exercise {
   type: ExerciseType
   muscle_group: MuscleGroup | null
   difficulty: Difficulty | null
-  equipment: string | null
+  equipment: string[] | null
   youtube_url: string | null
   met_value: number | null
   is_active: boolean
@@ -62,6 +62,7 @@ export interface WorkoutSessionSummary {
   date: string
   memo: string | null
   kcal: number | null
+  duration_min: number | null
   exercise_count: number
   muscle_groups: string[]
 }
@@ -72,6 +73,7 @@ export interface WorkoutSessionRead {
   date: string
   memo: string | null
   kcal: number | null
+  duration_min: number | null
   created_at: string
   exercise_logs: ExerciseLogRead[]
 }

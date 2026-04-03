@@ -10,7 +10,7 @@ import { CompleteStep } from "@/components/workout/CompleteStep"
 import type { ActiveExercise, Exercise } from "@/types"
 import { clearTimer } from "@/lib/timer-storage"
 
-type Step = "select-exercises" | "logging" | "complete"
+type Step = "select-exercises" | "logging" | "add-exercises" | "complete"
 
 export default function WorkoutLogPage() {
   const navigate = useNavigate()
@@ -82,6 +82,7 @@ export default function WorkoutLogPage() {
     await saveWorkout({
       date: today,
       memo: memo || undefined,
+      duration_min: completedElapsedSec > 0 ? Math.round(completedElapsedSec / 60) : undefined,
       exercise_logs: exerciseLogs,
     })
 
@@ -120,10 +121,36 @@ export default function WorkoutLogPage() {
     setCompletedElapsedSec(0)
   }
 
+  function handleAddMoreExercises(newExercises: Exercise[]) {
+    const allExercises = [...selectedExercises, ...newExercises]
+    setSelectedExercises(allExercises)
+    if (session) {
+      setSession({
+        ...session,
+        selectedExercises: allExercises,
+        activeExercises: [
+          ...session.activeExercises,
+          ...newExercises.map((e) => ({ exerciseId: e.id, sets: [] })),
+        ],
+      })
+    }
+    setStep("logging")
+  }
+
   if (step === "select-exercises") {
     return (
       <SelectExercisesStep
         onConfirm={handleSelectExercises}
+      />
+    )
+  }
+
+  if (step === "add-exercises") {
+    return (
+      <SelectExercisesStep
+        onConfirm={handleAddMoreExercises}
+        onCancel={() => setStep("logging")}
+        excludeIds={new Set(selectedExercises.map((e) => e.id))}
       />
     )
   }
@@ -134,6 +161,8 @@ export default function WorkoutLogPage() {
         exercises={selectedExercises}
         initialActiveExercises={session?.activeExercises}
         onComplete={handleCompleteLogging}
+        onCancel={handleRestart}
+        onAddExercises={() => setStep("add-exercises")}
         onActiveExercisesChange={handleActiveExercisesChange}
       />
     )

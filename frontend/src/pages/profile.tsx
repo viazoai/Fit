@@ -9,15 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useCurrentUser } from "@/context/user-context"
 import { useToast } from "@/context/toast-context"
-
-const EQUIPMENT_LIST = [
-  { value: "barbell", label: "바벨" },
-  { value: "dumbbell", label: "덤벨" },
-  { value: "cable", label: "케이블" },
-  { value: "machine", label: "머신" },
-  { value: "bodyweight", label: "맨몸" },
-  { value: "pull-up bar", label: "철봉" },
-]
+import { EQUIPMENT_LIST } from "@/lib/constants"
 
 const FITNESS_GOALS = [
   "근력 향상",
@@ -164,12 +156,12 @@ export default function ProfilePage() {
       <div className="px-4 py-5">
         <h2 className="text-sm font-semibold mb-3">보유 장비</h2>
         <div className="flex flex-wrap gap-2">
-          {EQUIPMENT_LIST.map((item) => {
-            const isSelected = selectedEquipment.includes(item.value)
+          {EQUIPMENT_LIST.map((eq) => {
+            const isSelected = selectedEquipment.includes(eq)
             return (
               <button
-                key={item.value}
-                onClick={() => toggleEquipment(item.value)}
+                key={eq}
+                onClick={() => toggleEquipment(eq)}
                 className={[
                   "inline-flex items-center gap-1.5 h-8 rounded-full px-3 text-sm font-medium border transition-colors",
                   isSelected
@@ -178,7 +170,7 @@ export default function ProfilePage() {
                 ].join(" ")}
               >
                 {isSelected && <Check className="size-3.5" />}
-                {item.label}
+                {eq}
               </button>
             )
           })}

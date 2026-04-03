@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, ChevronDown, ChevronUp, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -69,6 +69,14 @@ function WorkoutSummaryCard({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {summary.duration_min != null && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="size-3" />
+                {summary.duration_min < 60
+                  ? `${summary.duration_min}m`
+                  : `${Math.floor(summary.duration_min / 60)}h ${summary.duration_min % 60}m`}
+              </span>
+            )}
             {expanded ? (
               <ChevronUp className="size-4 text-muted-foreground" />
             ) : (
@@ -101,27 +109,78 @@ function WorkoutSummaryCard({
         {expanded && detail && (
           <div className="mt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
             <Separator />
-            {detail.exercise_logs.map((log) => (
-              <div key={log.id}>
-                <p className="text-xs font-semibold mb-1.5">
-                  {log.exercise_name ?? `운동 #${log.exercise_id}`}
-                </p>
-                <div className="grid grid-cols-3 text-[11px] font-medium text-muted-foreground mb-1">
-                  <span>세트</span>
-                  <span className="text-right">무게</span>
-                  <span className="text-right">횟수</span>
+            {detail.exercise_logs.map((log) => {
+              const isCardio = log.exercise_type === "유산소"
+              const isStretching = log.exercise_type === "스트레칭"
+
+              return (
+                <div key={log.id}>
+                  <p className="text-xs font-semibold mb-1.5">
+                    {log.exercise_name ?? `운동 #${log.exercise_id}`}
+                  </p>
+
+                  {isCardio && (
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                      {log.duration_min != null && (
+                        <>
+                          <span className="text-muted-foreground">시간</span>
+                          <span className="text-right">{log.duration_min}분</span>
+                        </>
+                      )}
+                      {log.distance_km != null && (
+                        <>
+                          <span className="text-muted-foreground">거리</span>
+                          <span className="text-right">{log.distance_km}km</span>
+                        </>
+                      )}
+                      {log.speed_kmh != null && (
+                        <>
+                          <span className="text-muted-foreground">속도</span>
+                          <span className="text-right">{log.speed_kmh}km/h</span>
+                        </>
+                      )}
+                      {log.incline_pct != null && (
+                        <>
+                          <span className="text-muted-foreground">경사</span>
+                          <span className="text-right">{log.incline_pct}%</span>
+                        </>
+                      )}
+                      {log.duration_min == null && log.distance_km == null && (
+                        <span className="text-muted-foreground col-span-2">기록 없음</span>
+                      )}
+                    </div>
+                  )}
+
+                  {isStretching && (
+                    <div className="grid grid-cols-2 gap-x-3 text-xs">
+                      <span className="text-muted-foreground">시간</span>
+                      <span className="text-right">
+                        {log.duration_min != null ? `${log.duration_min}분` : "-"}
+                      </span>
+                    </div>
+                  )}
+
+                  {!isCardio && !isStretching && (
+                    <>
+                      <div className="grid grid-cols-3 text-[11px] font-medium text-muted-foreground mb-1">
+                        <span>세트</span>
+                        <span className="text-right">무게</span>
+                        <span className="text-right">횟수</span>
+                      </div>
+                      {log.sets.map((set) => (
+                        <div key={set.id} className="grid grid-cols-3 text-xs">
+                          <span>{set.set_index}</span>
+                          <span className="text-right">
+                            {set.weight_kg && set.weight_kg > 0 ? `${set.weight_kg}kg` : "-"}
+                          </span>
+                          <span className="text-right">{set.reps ?? "-"}회</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
-                {log.sets.map((set) => (
-                  <div key={set.id} className="grid grid-cols-3 text-xs">
-                    <span>{set.set_index}</span>
-                    <span className="text-right">
-                      {set.weight_kg && set.weight_kg > 0 ? `${set.weight_kg}kg` : "-"}
-                    </span>
-                    <span className="text-right">{set.reps ?? "-"}회</span>
-                  </div>
-                ))}
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </CardContent>

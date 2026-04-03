@@ -14,6 +14,7 @@ class WorkoutSession(Base):
     date: Mapped[date] = mapped_column(Date)
     memo: Mapped[str | None] = mapped_column(Text)
     kcal: Mapped[int | None]
+    duration_min: Mapped[int | None]
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="sessions")  # noqa: F821

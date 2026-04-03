@@ -56,6 +56,7 @@ class WorkoutSessionBase(BaseModel):
     date: date
     memo: str | None = None
     kcal: int | None = None
+    duration_min: int | None = None
 
 
 class WorkoutSessionCreate(WorkoutSessionBase):
@@ -65,6 +66,7 @@ class WorkoutSessionCreate(WorkoutSessionBase):
 class WorkoutSessionUpdate(BaseModel):
     memo: str | None = None
     kcal: int | None = None
+    duration_min: int | None = None
     exercise_logs: list[ExerciseLogCreate] | None = None
 
 
@@ -84,6 +86,7 @@ class WorkoutSessionSummary(BaseModel):
     date: date
     memo: str | None
     kcal: int | None
+    duration_min: int | None
     exercise_count: int
     muscle_groups: list[str]
 

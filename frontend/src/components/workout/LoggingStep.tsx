@@ -1,16 +1,9 @@
 import { useState, useEffect, useRef } from "react"
-import { Plus, Trash2, CheckCircle2, Timer, Youtube, X, Pause, Play, Search } from "lucide-react"
+import { Plus, Trash2, CheckCircle2, Timer, Youtube, X, Pause, Play, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { RpeSlider } from "@/components/workout/rpe-slider"
 import { formatSeconds } from "@/lib/date-utils"
 import {
@@ -22,131 +15,23 @@ import {
   hasActiveTimer,
   clearTimer,
 } from "@/lib/timer-storage"
-import { useExercises } from "@/context/exercise-context"
-import { MUSCLE_GROUPS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
-import { cn } from "@/lib/utils"
 import type { Exercise, ActiveSet, ActiveExercise } from "@/types"
 
 export type { ActiveSet, ActiveExercise }
-
-// 운동 추가 Dialog 내부 피커
-function ExercisePickerDialog({
-  open,
-  excludeIds,
-  onClose,
-  onAdd,
-}: {
-  open: boolean
-  excludeIds: Set<number>
-  onClose: () => void
-  onAdd: (exercise: Exercise) => void
-}) {
-  const { exercises: allExercises } = useExercises()
-  const [search, setSearch] = useState("")
-  const [muscleFilter, setMuscleFilter] = useState("all")
-
-  const filtered = allExercises.filter((e) => {
-    if (excludeIds.has(e.id)) return false
-    if (muscleFilter !== "all" && e.muscle_group !== muscleFilter) return false
-    if (search) {
-      const q = search.toLowerCase()
-      if (!e.name.toLowerCase().includes(q)) return false
-    }
-    return true
-  })
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>운동 추가</DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-2 overflow-hidden">
-          {/* 검색 */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="운동 이름 검색..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-
-          {/* 근육군 필터 */}
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-            <button
-              onClick={() => setMuscleFilter("all")}
-              className={cn(
-                "shrink-0 h-7 rounded-full px-3 text-xs font-medium border transition-colors",
-                muscleFilter === "all"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-foreground border-border hover:bg-muted"
-              )}
-            >
-              전체
-            </button>
-            {MUSCLE_GROUPS.map((mg) => (
-              <button
-                key={mg}
-                onClick={() => setMuscleFilter(mg)}
-                className={cn(
-                  "shrink-0 h-7 rounded-full px-3 text-xs font-medium border transition-colors",
-                  muscleFilter === mg
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-foreground border-border hover:bg-muted"
-                )}
-              >
-                {mg}
-              </button>
-            ))}
-          </div>
-
-          {/* 운동 목록 */}
-          <div className="flex flex-col gap-1 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다.</p>
-            ) : (
-              filtered.map((exercise) => (
-                <button
-                  key={exercise.id}
-                  onClick={() => {
-                    onAdd(exercise)
-                    onClose()
-                  }}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-left hover:border-muted-foreground/30 transition-colors"
-                >
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium">{exercise.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {exercise.muscle_group ?? exercise.type}
-                    </span>
-                  </div>
-                  {exercise.difficulty && (
-                    <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="shrink-0 ml-2">
-                      {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
-                    </Badge>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 export function LoggingStep({
   exercises: initialExercises,
   initialActiveExercises,
   onComplete,
+  onCancel,
+  onAddExercises,
   onActiveExercisesChange,
 }: {
   exercises: Exercise[]
   initialActiveExercises?: ActiveExercise[]
   onComplete: (activeExercises: ActiveExercise[], elapsedSec: number) => void
+  onCancel: () => void
+  onAddExercises: () => void
   onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
 }) {
   // exercises를 내부 state로 전환
@@ -163,7 +48,6 @@ export function LoggingStep({
     onActiveExercisesChange?.(updated)
   }
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [showPicker, setShowPicker] = useState(false)
 
   // localStorage 기반 타이머
   const [elapsedSec, setElapsedSec] = useState(0)
@@ -273,12 +157,6 @@ export function LoggingStep({
     setCardioSaved(true)
   }
 
-  // 운동 추가
-  function handleAddExercise(exercise: Exercise) {
-    setCurrentExercises((prev) => [...prev, exercise])
-    updateActiveExercises([...activeExercises, { exerciseId: exercise.id, sets: [] }])
-  }
-
   // 운동 삭제
   function handleRemoveExercise(index: number) {
     setCurrentExercises((prev) => prev.filter((_, i) => i !== index))
@@ -304,7 +182,6 @@ export function LoggingStep({
     onComplete(activeExercises, elapsedSec)
   }
 
-  const currentExerciseIds = new Set(currentExercises.map((e) => e.id))
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-24">
@@ -374,7 +251,7 @@ export function LoggingStep({
 
         {/* 운동 추가 버튼 */}
         <button
-          onClick={() => setShowPicker(true)}
+          onClick={onAddExercises}
           className="shrink-0 rounded-lg border border-dashed border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground transition-colors"
           aria-label="운동 추가"
         >
@@ -569,21 +446,41 @@ export function LoggingStep({
         </CardContent>
       </Card>
 
-      {/* 운동 완료 버튼 */}
-      <div className="fixed bottom-20 left-0 right-0 px-4">
-        <Button className="w-full" onClick={handleComplete}>
+      {/* 이전/다음 버튼 */}
+      {currentExercises.length > 1 && (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={currentIndex === 0}
+            onClick={() => setCurrentIndex((i) => i - 1)}
+          >
+            <ChevronLeft className="size-4" />
+            이전
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={currentIndex === currentExercises.length - 1}
+            onClick={() => setCurrentIndex((i) => i + 1)}
+          >
+            다음
+            <ChevronRight className="size-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* 운동 완료/취소 버튼 */}
+      <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
+        <Button variant="outline" className="w-24 h-10" onClick={onCancel}>
+          취소
+        </Button>
+        <Button className="flex-1 h-10" onClick={handleComplete}>
           <CheckCircle2 />
           운동 완료
         </Button>
       </div>
 
-      {/* 운동 추가 다이얼로그 */}
-      <ExercisePickerDialog
-        open={showPicker}
-        excludeIds={currentExerciseIds}
-        onClose={() => setShowPicker(false)}
-        onAdd={handleAddExercise}
-      />
     </div>
   )
 }

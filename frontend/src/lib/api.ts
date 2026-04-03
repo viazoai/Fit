@@ -115,6 +115,7 @@ export async function getWorkout(id: number): Promise<WorkoutSessionRead> {
 export async function createWorkout(body: {
   date: string
   memo?: string
+  duration_min?: number
   exercise_logs: {
     exercise_id: number
     order_index?: number

@@ -27,6 +27,28 @@ export const DIFFICULTY_VARIANT: Record<string, "default" | "secondary" | "outli
   고급: "outline",
 }
 
+/** 기구 목록 (필터 & 프로필 보유장비 공용) */
+export const EQUIPMENT_LIST = [
+  "바벨",
+  "덤벨",
+  "케이블",
+  "체스트프레스머신",
+  "랫풀다운머신",
+  "레그프레스머신",
+  "레그컬머신",
+  "레그익스텐션머신",
+  "펙덱머신",
+  "스텝밀",
+  "자전거",
+  "철봉",
+  "딥스바",
+  "저항밴드",
+  "케틀벨",
+  "트레드밀",
+] as const
+
+export type EquipmentName = (typeof EQUIPMENT_LIST)[number]
+
 export const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"]
 
 export const WEEK_GOAL = 4
