@@ -8,7 +8,7 @@ class ExerciseBase(BaseModel):
     type: str
     muscle_group: str | None = None
     difficulty: str | None = None
-    equipment: str | None = None
+    equipment: list[str] | None = None
     youtube_url: str | None = None
     met_value: Decimal | None = None
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import String, Boolean, Numeric, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -21,7 +22,7 @@ class Exercise(Base):
     type: Mapped[str] = mapped_column(String(20))
     muscle_group: Mapped[str | None] = mapped_column(String(20))
     difficulty: Mapped[str | None] = mapped_column(String(10))
-    equipment: Mapped[str | None] = mapped_column(String(50))
+    equipment: Mapped[list[str] | None] = mapped_column(ARRAY(String(50)), nullable=True)
     youtube_url: Mapped[str | None] = mapped_column(Text)
     met_value: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
