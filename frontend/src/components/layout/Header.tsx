@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Dumbbell, Flame } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
@@ -36,11 +37,34 @@ interface HeaderProps {
   transparent?: boolean
 }
 
+function useElapsedTimer(startedAt: string | undefined) {
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    if (!startedAt) { setElapsed(0); return }
+    const tick = () => setElapsed(Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000))
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [startedAt])
+
+  return elapsed
+}
+
+function formatElapsed(sec: number) {
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+}
+
 export default function Header({ transparent = false }: HeaderProps) {
   const { currentUser } = useCurrentUser()
-  const { summaries } = useWorkouts()
+  const { summaries, isWorkoutActive, session } = useWorkouts()
   const today = getToday()
   const streak = calcStreakFromSummaries(currentUser.id, today, summaries)
+  const elapsed = useElapsedTimer(isWorkoutActive ? session?.startedAt : undefined)
 
   return (
     <header
@@ -55,6 +79,16 @@ export default function Header({ transparent = false }: HeaderProps) {
         <Dumbbell className="size-5 text-primary" />
         <span className="text-base font-bold tracking-tight">Fit</span>
       </Link>
+
+      {/* 운동 중 타이머 */}
+      {isWorkoutActive && (
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+          <span className="text-sm font-semibold tabular-nums tracking-wide">
+            {formatElapsed(elapsed)}
+          </span>
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         {/* 스트릭 */}

@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.db import get_db
 from app.models.exercise import Exercise
+from app.models.workout import ExerciseLog, ExerciseSet, WorkoutSession
+from app.models.user import User
 from app.schemas.exercise import ExerciseCreate, ExerciseRead
 from app.services.auth import get_current_user
 
@@ -25,6 +27,30 @@ def list_exercises(
     if q:
         query = query.filter(Exercise.name.ilike(f"%{q}%"))
     return query.order_by(Exercise.name).all()
+
+
+@router.get("/{exercise_id}/last-log")
+def get_last_exercise_log(
+    exercise_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """해당 운동의 가장 최근 세트 기록 반환 (자동입력용)"""
+    log = (
+        db.query(ExerciseLog)
+        .join(WorkoutSession)
+        .filter(
+            ExerciseLog.exercise_id == exercise_id,
+            WorkoutSession.user_id == user.id,
+        )
+        .options(joinedload(ExerciseLog.sets))
+        .order_by(WorkoutSession.date.desc(), ExerciseLog.id.desc())
+        .first()
+    )
+    if not log or not log.sets:
+        return {"sets": []}
+    sets = sorted(log.sets, key=lambda s: s.set_index)
+    return {"sets": [{"set_index": s.set_index, "weight_kg": float(s.weight_kg) if s.weight_kg else None, "reps": s.reps} for s in sets]}
 
 
 @router.get("/{exercise_id}", response_model=ExerciseRead)

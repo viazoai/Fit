@@ -94,6 +94,12 @@ export async function getExercise(id: number): Promise<Exercise> {
   return request<Exercise>(`/api/exercises/${id}`)
 }
 
+export async function getLastExerciseLog(exerciseId: number): Promise<{
+  sets: { set_index: number; weight_kg: number | null; reps: number | null }[]
+}> {
+  return request(`/api/exercises/${exerciseId}/last-log`)
+}
+
 // ─── Workouts ────────────────────────────────────────────────────────────────
 
 import type { WorkoutSessionSummary, WorkoutSessionRead } from "@/types"

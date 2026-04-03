@@ -114,6 +114,7 @@ export default function WorkoutLogPage() {
   }
 
   function handleRestart() {
+    setWorkoutActive(false)
     clearSession()
     setStep("select-exercises")
     setSelectedExercises([])

@@ -45,6 +45,7 @@ export const EQUIPMENT_LIST = [
   "저항밴드",
   "케틀벨",
   "트레드밀",
+  "어시스티드풀업머신",
 ] as const
 
 export type EquipmentName = (typeof EQUIPMENT_LIST)[number]

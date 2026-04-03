@@ -112,7 +112,7 @@ export function SelectExercisesStep({
         <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")}>
           전체
         </FilterChip>
-        {exerciseTypes.filter((t) => t !== "맨몸").map((t) => (
+        {exerciseTypes.map((t) => (
           <FilterChip
             key={t}
             active={typeFilter === t}
@@ -185,7 +185,10 @@ export function SelectExercisesStep({
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="text-sm font-medium">{exercise.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {exercise.muscle_group ?? exercise.type}
+                        {[
+                          exercise.muscle_group ?? exercise.type,
+                          exercise.equipment?.join(", "),
+                        ].filter(Boolean).join(" · ")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-2">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Plus, Trash2, CheckCircle2, Timer, Youtube, X, Pause, Play, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Trash2, CheckCircle2, Youtube, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,7 +15,10 @@ import {
   hasActiveTimer,
   clearTimer,
 } from "@/lib/timer-storage"
+import { getLastExerciseLog } from "@/lib/api"
 import type { Exercise, ActiveSet, ActiveExercise } from "@/types"
+
+type LastSet = { weight_kg: number | null; reps: number | null }
 
 export type { ActiveSet, ActiveExercise }
 
@@ -48,6 +51,9 @@ export function LoggingStep({
     onActiveExercisesChange?.(updated)
   }
   const [currentIndex, setCurrentIndex] = useState(0)
+
+  // 운동별 최근 수행 기록 캐시 (exerciseId → 세트 배열)
+  const lastLogsRef = useRef<Map<number, LastSet[]>>(new Map())
 
   // localStorage 기반 타이머
   const [elapsedSec, setElapsedSec] = useState(0)
@@ -85,20 +91,43 @@ export function LoggingStep({
     }
   }, [])
 
-  // 탭 전환 시 — 마지막 세트 값 복원, 유산소/스트레칭 값 복원
+  // 탭 전환 시 — 세트 값 자동입력 + 유산소/스트레칭 값 복원
   useEffect(() => {
-    const lastSet = activeExercises[currentIndex]?.sets.at(-1)
+    const ae = activeExercises[currentIndex]
+    const exercise = currentExercises[currentIndex]
+    const currentSets = ae?.sets ?? []
+    const lastSet = currentSets.at(-1)
+
     if (lastSet) {
+      // 2세트 이상: 직전 세트 기준 자동입력
       setWeightKg(String(lastSet.weightKg))
+      setReps(String(lastSet.reps))
       setRpe(lastSet.rpe)
     } else {
-      setWeightKg("")
-      setReps("")
-      setRpe(7)
+      // 첫 세트: 이전 수행 기록에서 가져오기
+      const cached = lastLogsRef.current.get(exercise.id)
+      if (cached) {
+        const prev = cached[0]
+        setWeightKg(prev?.weight_kg != null ? String(prev.weight_kg) : "")
+        setReps(prev?.reps != null ? String(prev.reps) : "")
+        setRpe(7)
+      } else {
+        // 아직 캐시 없으면 API 호출
+        setWeightKg("")
+        setReps("")
+        setRpe(7)
+        getLastExerciseLog(exercise.id).then(({ sets }) => {
+          lastLogsRef.current.set(exercise.id, sets)
+          if (sets.length > 0 && activeExercises[currentIndex]?.sets.length === 0) {
+            const prev = sets[0]
+            if (prev.weight_kg != null) setWeightKg(String(prev.weight_kg))
+            if (prev.reps != null) setReps(String(prev.reps))
+          }
+        }).catch(() => {})
+      }
     }
 
     // 유산소/스트레칭 기존 값 복원
-    const ae = activeExercises[currentIndex]
     setDurationMin(ae?.durationMin !== undefined ? String(ae.durationMin) : "")
     setDistanceKm(ae?.distanceKm !== undefined ? String(ae.distanceKm) : "")
     setSpeedKmh(ae?.speedKmh !== undefined ? String(ae.speedKmh) : "")
@@ -127,7 +156,7 @@ export function LoggingStep({
         i === currentIndex ? { ...ae, sets: [...ae.sets, newSet] } : ae
       )
     )
-    setReps("")
+    // 다음 세트 자동입력: 무게는 유지, 횟수는 유지
   }
 
   function removeLastSet() {
@@ -185,24 +214,6 @@ export function LoggingStep({
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-24">
-      {/* 타이머 헤더 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Timer className="size-4" />
-          <span className="text-sm font-mono font-medium">{formatSeconds(elapsedSec)}</span>
-          <button
-            onClick={togglePause}
-            className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={paused ? "타이머 재개" : "타이머 일시정지"}
-          >
-            {paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {currentIndex + 1} / {currentExercises.length} 종목
-        </p>
-      </div>
-
       {/* 운동 탭 선택 */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {currentExercises.map((exercise, i) => (
@@ -322,7 +333,6 @@ export function LoggingStep({
                   onClick={saveCardioRecord}
                   disabled={!durationMin}
                 >
-                  <CheckCircle2 />
                   기록
                 </Button>
                 {cardioSaved && (
@@ -350,7 +360,6 @@ export function LoggingStep({
                   className="flex-1"
                   onClick={saveCardioRecord}
                 >
-                  <CheckCircle2 />
                   기록
                 </Button>
                 {cardioSaved && (
@@ -392,8 +401,7 @@ export function LoggingStep({
 
               <div className="flex gap-2">
                 <Button className="flex-1" onClick={addSet} disabled={!weightKg || !reps}>
-                  <Plus />
-                  세트 추가
+                  세트 기록
                 </Button>
                 {currentActive.sets.length > 0 && (
                   <Button variant="destructive" size="icon" onClick={removeLastSet}>
