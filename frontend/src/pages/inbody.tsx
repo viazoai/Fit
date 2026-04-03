@@ -11,7 +11,7 @@ export default function InbodyPage() {
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-xl font-bold">인바디</h1>
+          <h1 className="text-[30px] font-bold">인바디</h1>
         </div>
       </div>
       <div className="px-4 py-16 text-center">

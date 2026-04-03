@@ -25,7 +25,7 @@ export function WorkoutListStep({
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-4">
       {/* 헤더 */}
-      <h1 className="text-xl font-bold">Workout</h1>
+      <h1 className="text-[30px] font-bold">Workout</h1>
 
       {/* 기록 목록 */}
       {userWorkouts.length === 0 ? (

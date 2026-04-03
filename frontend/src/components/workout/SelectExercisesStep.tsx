@@ -93,7 +93,7 @@ export function SelectExercisesStep({
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-24">
-      <h1 className="text-xl font-bold">Workout</h1>
+      <h1 className="text-[30px] font-bold">Workout</h1>
 
       {/* 검색 */}
       <div className="relative">

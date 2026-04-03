@@ -20,7 +20,7 @@ export default function PartnerPage() {
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-xl font-bold">파트너 설정</h1>
+          <h1 className="text-[30px] font-bold">파트너 설정</h1>
         </div>
       </div>
 

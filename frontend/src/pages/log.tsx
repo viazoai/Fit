@@ -404,7 +404,7 @@ export default function LogPage() {
     <div className="px-4 pt-4 pb-4 space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Log</h1>
+        <h1 className="text-[30px] font-bold">Log</h1>
         <button
           onClick={() => setMode((m) => (m === "list" ? "calendar" : "list"))}
           className={cn(

@@ -1,6 +1,6 @@
 import { useRef } from "react"
 import { Link } from "react-router-dom"
-import { Flame, Calendar, ChevronRight, Pencil } from "lucide-react"
+import { Activity, Flame, Calendar, ChevronRight, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -8,8 +8,10 @@ import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { getToday, getDaysAgo, formatDateKo } from "@/lib/date-utils"
 import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
+import { RadarChart } from "@/components/charts/RadarChart"
 
 const BG_STORAGE_KEY = "fit-home-bg"
+const PROFILE_KEY = (userId: number) => `fit_profile_${userId}`
 
 export default function HomePage() {
   const { currentUser } = useCurrentUser()
@@ -30,6 +32,16 @@ export default function HomePage() {
 
   const today = getToday()
 
+  // 로컬 프로필 (체성분)
+  const profile = (() => {
+    try { return JSON.parse(localStorage.getItem(PROFILE_KEY(currentUser.id)) ?? "{}") } catch { return {} }
+  })()
+  const weightKg = parseFloat(profile.weightKg) || 0
+  const muscleMassKg = parseFloat(profile.muscleMassKg) || 0
+  const bodyFatPct = parseFloat(profile.bodyFatPct) || 0
+  const heightCm = parseFloat(profile.heightCm) || 0
+  const hasBodyData = weightKg > 0 || muscleMassKg > 0 || bodyFatPct > 0
+
   // 오늘 나의 운동 (summaries 기반)
   const todaySummary = summaries.find(
     (w) => w.user_id === currentUser.id && w.date === today
@@ -48,7 +60,7 @@ export default function HomePage() {
       <div className="pt-[160px] flex items-end justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
-          <h1 className="text-xl font-bold">
+          <h1 className="text-[30px] font-bold">
             안녕하세요, {currentUser.name}님 👋
           </h1>
         </div>
@@ -124,6 +136,61 @@ export default function HomePage() {
 
       {/* 이번 주 운동 현황 */}
       <WeeklyProgressCard />
+
+      {/* 체성분 분석 */}
+      {hasBodyData && (() => {
+        const bmi = heightCm > 0 ? weightKg / Math.pow(heightCm / 100, 2) : 0
+        const radarData = [
+          { label: "체중",    value: weightKg,                                    max: 100, target: 65 },
+          { label: "골격근",  value: muscleMassKg,                                max: 50,  target: 35 },
+          { label: "체지방↓", value: bodyFatPct > 0 ? 100 - bodyFatPct : 0,      max: 100, target: 85 },
+          { label: "BMI",    value: bmi,                                          max: 30,  target: 22 },
+          { label: "키",     value: heightCm,                                     max: 200 },
+        ]
+        return (
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Activity className="size-4 text-primary" />
+                <CardTitle className="text-base">체성분 분석</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-3">
+              <RadarChart data={radarData} size={180} />
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-0.5 rounded-full bg-accent-heat" />
+                  <span>현재</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-0.5 rounded-full bg-primary opacity-70" style={{ backgroundImage: "repeating-linear-gradient(90deg, #CCFF00 0 4px, transparent 4px 7px)" }} />
+                  <span>목표</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground w-full px-2">
+                {muscleMassKg > 0 && (
+                  <div className="flex justify-between">
+                    <span>골격근량</span>
+                    <span className="font-medium text-foreground">{muscleMassKg}kg</span>
+                  </div>
+                )}
+                {bodyFatPct > 0 && (
+                  <div className="flex justify-between">
+                    <span>체지방률</span>
+                    <span className="font-medium text-foreground">{bodyFatPct}%</span>
+                  </div>
+                )}
+                {bmi > 0 && (
+                  <div className="flex justify-between">
+                    <span>BMI</span>
+                    <span className="font-medium text-foreground">{bmi.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* 최근 운동 기록 */}
       {recentSummaries.length > 0 && (

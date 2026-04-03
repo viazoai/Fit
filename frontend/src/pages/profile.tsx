@@ -26,16 +26,23 @@ interface LocalProfile {
   equipment: string[]
   heightCm: string
   weightKg: string
+  muscleMassKg: string
+  bodyFatPct: string
   age: string
   injuries: string
+}
+
+const EMPTY_PROFILE: LocalProfile = {
+  fitnessGoal: "", equipment: [], heightCm: "", weightKg: "",
+  muscleMassKg: "", bodyFatPct: "", age: "", injuries: "",
 }
 
 function loadProfile(userId: number): LocalProfile {
   try {
     const raw = localStorage.getItem(LS_KEY(userId))
-    return raw ? JSON.parse(raw) : { fitnessGoal: "", equipment: [], heightCm: "", weightKg: "", age: "", injuries: "" }
+    return raw ? { ...EMPTY_PROFILE, ...JSON.parse(raw) } : EMPTY_PROFILE
   } catch {
-    return { fitnessGoal: "", equipment: [], heightCm: "", weightKg: "", age: "", injuries: "" }
+    return EMPTY_PROFILE
   }
 }
 
@@ -54,6 +61,8 @@ export default function ProfilePage() {
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>(initialProfile.equipment)
   const [heightCm, setHeightCm] = useState(initialProfile.heightCm)
   const [weightKg, setWeightKg] = useState(initialProfile.weightKg)
+  const [muscleMassKg, setMuscleMassKg] = useState(initialProfile.muscleMassKg)
+  const [bodyFatPct, setBodyFatPct] = useState(initialProfile.bodyFatPct)
   const [age, setAge] = useState(initialProfile.age)
   const [injuries, setInjuries] = useState(initialProfile.injuries)
 
@@ -69,6 +78,8 @@ export default function ProfilePage() {
       equipment: selectedEquipment,
       heightCm,
       weightKg,
+      muscleMassKg,
+      bodyFatPct,
       age,
       injuries,
     })
@@ -83,7 +94,7 @@ export default function ProfilePage() {
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-xl font-bold">프로필 설정</h1>
+          <h1 className="text-[30px] font-bold">프로필 설정</h1>
         </div>
         <div className="flex items-center gap-4">
           <Avatar name={currentUser.name} size="lg" />
@@ -211,6 +222,38 @@ export default function ProfilePage() {
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                 kg
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-muted-foreground w-16 shrink-0">골격근량</label>
+            <div className="relative flex-1">
+              <Input
+                type="number"
+                value={muscleMassKg}
+                onChange={(e) => setMuscleMassKg(e.target.value)}
+                placeholder="예: 35"
+                className="pr-8"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                kg
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-muted-foreground w-16 shrink-0">체지방률</label>
+            <div className="relative flex-1">
+              <Input
+                type="number"
+                value={bodyFatPct}
+                onChange={(e) => setBodyFatPct(e.target.value)}
+                placeholder="예: 18"
+                className="pr-8"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                %
               </span>
             </div>
           </div>

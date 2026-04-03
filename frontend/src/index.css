@@ -7,27 +7,28 @@
 
 :root {
     /* ── Dark theme (always on) ── */
-    --background: #0F0F0F;
-    --foreground: #FFFFFF;
-    --card: #1A1A1A;
-    --card-foreground: #FFFFFF;
-    --popover: #1A1A1A;
-    --popover-foreground: #FFFFFF;
+    /* 레이어 구조: background → card(밝음) → muted(카드 내 중첩, 어두움) */
+    --background: #111111;
+    --foreground: #F5F5F5;
+    --card: #1E1E1E;          /* 배경보다 밝게 — border 없이 floating */
+    --card-foreground: #F5F5F5;
+    --popover: #1E1E1E;
+    --popover-foreground: #F5F5F5;
 
     /* Primary = 네온 라임 */
     --primary: #CCFF00;
-    --primary-foreground: #0A0A0A;
+    --primary-foreground: #0F0F0F;
 
-    --secondary: #262626;
-    --secondary-foreground: #FFFFFF;
-    --muted: #262626;
-    --muted-foreground: #888888;
-    --accent: #262626;
-    --accent-foreground: #FFFFFF;
+    --secondary: #252525;
+    --secondary-foreground: #F5F5F5;
+    --muted: #111111;          /* 카드 안 중첩 요소 — 카드보다 어둡게 */
+    --muted-foreground: #777777;
+    --accent: #252525;
+    --accent-foreground: #F5F5F5;
 
     --destructive: oklch(0.704 0.191 22.216);
-    --border: #2A2A2A;
-    --input: #2A2A2A;
+    --border: #2E2E2E;         /* Separator 등 내부 구분선용 */
+    --input: #111111;
     --ring: #CCFF00;
 
     /* ── 커스텀 토큰 ── */

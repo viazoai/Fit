@@ -99,7 +99,7 @@ export default function ShopInventoryPage() {
         >
           <ChevronLeft className="size-5" />
         </button>
-        <h1 className="text-xl font-bold">내 인벤토리</h1>
+        <h1 className="text-[30px] font-bold">내 인벤토리</h1>
       </div>
 
       {/* 필터 탭 */}

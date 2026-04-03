@@ -109,7 +109,7 @@ export default function CalendarPage() {
 
   return (
     <div className="px-4 pt-4 pb-4 space-y-4">
-      <h1 className="text-xl font-bold">Calendar</h1>
+      <h1 className="text-[30px] font-bold">Calendar</h1>
 
       {/* 스트릭 배너 */}
       {streak > 0 && (
