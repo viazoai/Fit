@@ -5,11 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { RpeSlider } from "@/components/workout/rpe-slider"
-import { formatSeconds } from "@/lib/date-utils"
+// import { formatSeconds } from "@/lib/date-utils"
 import {
   startTimer,
-  pauseTimer,
-  resumeTimer,
   getElapsedMs,
   isPaused as getIsPaused,
   hasActiveTimer,
@@ -57,7 +55,7 @@ export function LoggingStep({
 
   // localStorage 기반 타이머
   const [elapsedSec, setElapsedSec] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [, setPaused] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const [weightKg, setWeightKg] = useState("")
@@ -191,17 +189,6 @@ export function LoggingStep({
     setCurrentExercises((prev) => prev.filter((_, i) => i !== index))
     updateActiveExercises(activeExercises.filter((_, i) => i !== index))
     setCurrentIndex((prev) => Math.min(prev, currentExercises.length - 2))
-  }
-
-  // 일시정지 토글
-  function togglePause() {
-    if (paused) {
-      resumeTimer()
-      setPaused(false)
-    } else {
-      pauseTimer()
-      setPaused(true)
-    }
   }
 
   // 완료 시 타이머 정리
