@@ -8,6 +8,7 @@ import { SelectExercisesStep } from "@/components/workout/SelectExercisesStep"
 import { LoggingStep } from "@/components/workout/LoggingStep"
 import { CompleteStep } from "@/components/workout/CompleteStep"
 import type { ActiveExercise, Exercise } from "@/types"
+import { clearTimer } from "@/lib/timer-storage"
 
 type Step = "select-exercises" | "logging" | "complete"
 
@@ -30,6 +31,7 @@ export default function WorkoutLogPage() {
   const [completedElapsedSec, setCompletedElapsedSec] = useState(0)
 
   function handleSelectExercises(exercises: Exercise[]) {
+    clearTimer()
     const now = new Date().toISOString()
     setSelectedExercises(exercises)
     setWorkoutActive(true)
@@ -54,15 +56,19 @@ export default function WorkoutLogPage() {
     setStep("complete")
   }
 
-  function handleSaveWorkout(memo: string): EarnResult | null {
+  async function handleSaveWorkout(memo: string): Promise<EarnResult | null> {
     const today = new Date().toISOString().split("T")[0]
 
-    // API body 구성
+    // API body 구성 — 세트가 있거나 유산소/스트레칭 값이 있는 경우 포함
     const exerciseLogs = completedExercises
-      .filter((ae) => ae.sets.length > 0)
+      .filter((ae) => ae.sets.length > 0 || ae.durationMin !== undefined || ae.distanceKm !== undefined)
       .map((ae, idx) => ({
         exercise_id: ae.exerciseId,
         order_index: idx,
+        duration_min: ae.durationMin,
+        distance_km: ae.distanceKm,
+        speed_kmh: ae.speedKmh,
+        incline_pct: ae.inclinePct,
         sets: ae.sets.map((s) => ({
           set_index: s.setNumber,
           reps: s.reps,
@@ -72,14 +78,11 @@ export default function WorkoutLogPage() {
 
     if (exerciseLogs.length === 0) return null
 
-    // 비동기 저장 — fire and forget (UI는 즉시 전환)
-    saveWorkout({
+    // 저장 완료를 기다린 후 홈으로 이동
+    await saveWorkout({
       date: today,
       memo: memo || undefined,
       exercise_logs: exerciseLogs,
-    }).catch((err) => {
-      console.error("운동 저장 실패:", err)
-      toast("운동 저장에 실패했습니다. 다시 시도해주세요.")
     })
 
     // 포인트 획득

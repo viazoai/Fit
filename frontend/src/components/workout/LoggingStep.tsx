@@ -174,6 +174,13 @@ export function LoggingStep({
   const [reps, setReps] = useState("")
   const [rpe, setRpe] = useState(7)
 
+  // 유산소/스트레칭 입력 상태
+  const [durationMin, setDurationMin] = useState("")
+  const [distanceKm, setDistanceKm] = useState("")
+  const [speedKmh, setSpeedKmh] = useState("")
+  const [inclinePct, setInclinePct] = useState("")
+  const [cardioSaved, setCardioSaved] = useState(false)
+
   // 타이머 초기화 (복원 or 신규)
   useEffect(() => {
     if (!hasActiveTimer()) {
@@ -194,7 +201,7 @@ export function LoggingStep({
     }
   }, [])
 
-  // 탭 전환 시 — 마지막 세트 값 복원
+  // 탭 전환 시 — 마지막 세트 값 복원, 유산소/스트레칭 값 복원
   useEffect(() => {
     const lastSet = activeExercises[currentIndex]?.sets.at(-1)
     if (lastSet) {
@@ -205,6 +212,14 @@ export function LoggingStep({
       setReps("")
       setRpe(7)
     }
+
+    // 유산소/스트레칭 기존 값 복원
+    const ae = activeExercises[currentIndex]
+    setDurationMin(ae?.durationMin !== undefined ? String(ae.durationMin) : "")
+    setDistanceKm(ae?.distanceKm !== undefined ? String(ae.distanceKm) : "")
+    setSpeedKmh(ae?.speedKmh !== undefined ? String(ae.speedKmh) : "")
+    setInclinePct(ae?.inclinePct !== undefined ? String(ae.inclinePct) : "")
+    setCardioSaved(ae?.durationMin !== undefined)
   }, [currentIndex]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentExercise = currentExercises[currentIndex]
@@ -239,6 +254,23 @@ export function LoggingStep({
           : ae
       )
     )
+  }
+
+  // 유산소/스트레칭 기록 저장
+  function saveCardioRecord() {
+    const dur = parseFloat(durationMin) || undefined
+    const dist = parseFloat(distanceKm) || undefined
+    const spd = parseFloat(speedKmh) || undefined
+    const inc = parseFloat(inclinePct) || undefined
+
+    updateActiveExercises(
+      activeExercises.map((ae, i) =>
+        i === currentIndex
+          ? { ...ae, durationMin: dur, distanceKm: dist, speedKmh: spd, inclinePct: inc }
+          : ae
+      )
+    )
+    setCardioSaved(true)
   }
 
   // 운동 추가
@@ -314,6 +346,11 @@ export function LoggingStep({
                   {activeExercises[i].sets.length}세트
                 </span>
               )}
+              {activeExercises[i].sets.length === 0 && activeExercises[i].durationMin !== undefined && (
+                <span className="ml-1 text-[10px] opacity-70">
+                  {activeExercises[i].durationMin}분
+                </span>
+              )}
             </button>
             {currentExercises.length > 1 && (
               <button
@@ -354,71 +391,165 @@ export function LoggingStep({
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {/* 이전 세트 기록 테이블 */}
-          {currentActive.sets.length > 0 && (
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">기록된 세트</p>
-              <div className="flex flex-col gap-1">
-                <div className="grid grid-cols-4 text-[11px] font-medium text-muted-foreground">
-                  <span>세트</span>
-                  <span className="text-right">무게</span>
-                  <span className="text-right">횟수</span>
-                  <span className="text-right">RPE</span>
+          {/* 운동 타입별 입력 UI */}
+          {(currentExercise.type === "유산소") && (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-medium">유산소 기록</p>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">시간 (분) *</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="30"
+                    value={durationMin}
+                    onChange={(e) => { setDurationMin(e.target.value); setCardioSaved(false) }}
+                  />
                 </div>
-                <Separator />
-                {currentActive.sets.map((set) => (
-                  <div key={set.setNumber} className="grid grid-cols-4 text-xs">
-                    <span className="font-medium">{set.setNumber}</span>
-                    <span className="text-right">{set.weightKg}kg</span>
-                    <span className="text-right">{set.reps}회</span>
-                    <span className="text-right text-muted-foreground">{set.rpe}</span>
-                  </div>
-                ))}
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">거리 (km)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={distanceKm}
+                    onChange={(e) => { setDistanceKm(e.target.value); setCardioSaved(false) }}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">속도 (km/h)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={speedKmh}
+                    onChange={(e) => { setSpeedKmh(e.target.value); setCardioSaved(false) }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">경사 (%)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={inclinePct}
+                    onChange={(e) => { setInclinePct(e.target.value); setCardioSaved(false) }}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={saveCardioRecord}
+                  disabled={!durationMin}
+                >
+                  <CheckCircle2 />
+                  기록
+                </Button>
+                {cardioSaved && (
+                  <span className="text-xs text-green-500 font-medium">저장됨</span>
+                )}
               </div>
             </div>
           )}
 
-          {/* 새 세트 입력 */}
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-medium">세트 {currentActive.sets.length + 1} 입력</p>
-
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="mb-1 block text-xs text-muted-foreground">무게 (kg)</label>
+          {(currentExercise.type === "스트레칭") && (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-medium">스트레칭 기록</p>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">시간 (분)</label>
                 <Input
                   type="number"
                   inputMode="decimal"
-                  placeholder="0"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(e.target.value)}
+                  placeholder="10"
+                  value={durationMin}
+                  onChange={(e) => { setDurationMin(e.target.value); setCardioSaved(false) }}
                 />
               </div>
-              <div className="flex-1">
-                <label className="mb-1 block text-xs text-muted-foreground">횟수</label>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={reps}
-                  onChange={(e) => setReps(e.target.value)}
-                />
+              <div className="flex items-center gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={saveCardioRecord}
+                >
+                  <CheckCircle2 />
+                  기록
+                </Button>
+                {cardioSaved && (
+                  <span className="text-xs text-green-500 font-medium">저장됨</span>
+                )}
               </div>
             </div>
+          )}
 
-            <RpeSlider value={rpe} onChange={setRpe} />
+          {/* 기구/맨몸: 새 세트 입력 */}
+          {(currentExercise.type === "기구" || currentExercise.type === "맨몸") && (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-medium">세트 {currentActive.sets.length + 1} 입력</p>
 
-            <div className="flex gap-2">
-              <Button className="flex-1" onClick={addSet} disabled={!weightKg || !reps}>
-                <Plus />
-                세트 추가
-              </Button>
-              {currentActive.sets.length > 0 && (
-                <Button variant="destructive" size="icon" onClick={removeLastSet}>
-                  <Trash2 />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">무게 (kg)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-muted-foreground">횟수</label>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={reps}
+                    onChange={(e) => setReps(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <RpeSlider value={rpe} onChange={setRpe} />
+
+              <div className="flex gap-2">
+                <Button className="flex-1" onClick={addSet} disabled={!weightKg || !reps}>
+                  <Plus />
+                  세트 추가
                 </Button>
+                {currentActive.sets.length > 0 && (
+                  <Button variant="destructive" size="icon" onClick={removeLastSet}>
+                    <Trash2 />
+                  </Button>
+                )}
+              </div>
+
+              {/* 기록된 세트 테이블 — 세트 추가 버튼 아래 */}
+              {currentActive.sets.length > 0 && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">기록된 세트</p>
+                  <div className="flex flex-col gap-1">
+                    <div className="grid grid-cols-4 text-[11px] font-medium text-muted-foreground">
+                      <span>세트</span>
+                      <span className="text-right">무게</span>
+                      <span className="text-right">횟수</span>
+                      <span className="text-right">RPE</span>
+                    </div>
+                    <Separator />
+                    {currentActive.sets.map((set) => (
+                      <div key={set.setNumber} className="grid grid-cols-4 text-xs">
+                        <span className="font-medium">{set.setNumber}</span>
+                        <span className="text-right">{set.weightKg}kg</span>
+                        <span className="text-right">{set.reps}회</span>
+                        <span className="text-right text-muted-foreground">{set.rpe}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          </div>
+          )}
 
           {/* YouTube 링크 */}
           {currentExercise.youtube_url && (

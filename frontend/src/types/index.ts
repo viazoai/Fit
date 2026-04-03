@@ -111,6 +111,11 @@ export interface ActiveSet {
 export interface ActiveExercise {
   exerciseId: number
   sets: ActiveSet[]
+  // 유산소/스트레칭용
+  durationMin?: number
+  distanceKm?: number
+  speedKmh?: number
+  inclinePct?: number
 }
 
 // ─── Gamification (local-only, no backend yet) ───────────────────────────────
