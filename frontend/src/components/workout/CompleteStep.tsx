@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { CheckCircle2, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { formatSeconds } from "@/lib/date-utils"
+import { useToast } from "@/context/toast-context"
 import type { Exercise, ActiveExercise } from "@/types"
 import type { EarnResult } from "@/context/points-context"
 
@@ -20,22 +21,38 @@ export function CompleteStep({
   elapsedSec: number
   onGoHome: () => void
   onRestart: () => void
-  onSave: (memo: string) => EarnResult | null
+  onSave: (memo: string) => Promise<EarnResult | null>
 }) {
+  const { toast } = useToast()
   const [memo, setMemo] = useState("")
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [earnResult, setEarnResult] = useState<EarnResult | null>(null)
+  const savingRef = useRef(false)
 
   const totalSets = activeExercises.reduce((sum, ae) => sum + ae.sets.length, 0)
   const exerciseCount = activeExercises.filter((ae) => ae.sets.length > 0).length
 
-  function handleSaveAndGo() {
-    if (!saved) {
-      const result = onSave(memo)
+  async function handleSaveAndGo() {
+    if (saved) {
+      onGoHome()
+      return
+    }
+    if (savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    try {
+      const result = await onSave(memo)
       setSaved(true)
       setEarnResult(result)
+      onGoHome()
+    } catch (err) {
+      console.error("운동 저장 실패:", err)
+      toast("운동 저장에 실패했습니다. 다시 시도해주세요.")
+    } finally {
+      setSaving(false)
+      savingRef.current = false
     }
-    onGoHome()
   }
 
   return (
@@ -135,8 +152,8 @@ export function CompleteStep({
 
       {/* 하단 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex flex-col gap-2 px-4">
-        <Button className="w-full" onClick={handleSaveAndGo}>
-          {saved ? "홈으로 가기" : "저장하고 홈으로"}
+        <Button className="w-full" onClick={handleSaveAndGo} disabled={saving}>
+          {saving ? "저장 중..." : saved ? "홈으로 가기" : "저장하고 홈으로"}
         </Button>
         <Button variant="outline" className="w-full" onClick={onRestart}>
           다시 기록하기

@@ -37,6 +37,9 @@ async function request<T>(
   })
 
   if (!res.ok) {
+    if (res.status === 401) {
+      clearToken()
+    }
     const body = await res.text().catch(() => "")
     throw new Error(`API ${res.status}: ${body}`)
   }
