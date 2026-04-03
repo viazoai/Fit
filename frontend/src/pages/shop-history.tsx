@@ -20,7 +20,7 @@ export default function ShopHistoryPage() {
   const { history, getBalance } = usePoints()
 
   const myHistory = history
-    .filter((e) => e.userId === currentUserId)
+    .filter((e) => e.userId === String(currentUserId))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
   const balance = getBalance(currentUserId)

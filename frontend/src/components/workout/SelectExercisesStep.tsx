@@ -4,15 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { mockExercises } from "@/mocks"
-import {
-  BODY_PART_KO,
-  BODY_PARTS,
-  EQUIPMENT_KO,
-  EQUIPMENT_TYPES,
-  DIFFICULTY_KO,
-  DIFFICULTY_VARIANT,
-} from "@/lib/constants"
+import { useExercises } from "@/context/exercise-context"
+import { MUSCLE_GROUPS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
 import type { Exercise } from "@/types"
 
 type FilterChipProps = {
@@ -42,33 +35,43 @@ export function SelectExercisesStep({
 }: {
   onConfirm: (exercises: Exercise[]) => void
 }) {
+  const { exercises: allExercises } = useExercises()
   const [search, setSearch] = useState("")
-  const [bodyPartFilter, setBodyPartFilter] = useState<string>("all")
+  const [muscleFilter, setMuscleFilter] = useState<string>("all")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
   const [equipmentFilter, setEquipmentFilter] = useState<string>("all")
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<number>>(new Set())
 
-  const filtered = mockExercises.filter((e) => {
-    if (bodyPartFilter !== "all" && e.bodyPart !== bodyPartFilter) return false
+  // 운동 타입 / 장비 목록을 데이터에서 동적 추출
+  const exerciseTypes = [...new Set(allExercises.map((e) => e.type))].sort()
+  const equipmentTypes = [...new Set(
+    allExercises.map((e) => e.equipment).filter((v): v is string => !!v)
+  )].sort()
+
+  const filtered = allExercises.filter((e) => {
+    if (muscleFilter !== "all" && e.muscle_group !== muscleFilter) return false
+    if (typeFilter !== "all" && e.type !== typeFilter) return false
     if (equipmentFilter !== "all" && e.equipment !== equipmentFilter) return false
     if (search) {
       const q = search.toLowerCase()
-      if (
-        !e.nameKo.includes(search) &&
-        !e.nameEn.toLowerCase().includes(q) &&
-        !e.primaryMuscle.includes(search)
-      )
-        return false
+      if (!e.name.toLowerCase().includes(q)) return false
     }
     return true
   })
 
-  // 부위별 그룹핑 (필터된 결과 기준)
-  const groupedByBodyPart = BODY_PARTS.map((part) => ({
-    part,
-    exercises: filtered.filter((e) => e.bodyPart === part),
+  // 운동 구분(타입)별 그룹핑
+  const TYPE_ORDER = ["기구", "맨몸", "유산소", "스트레칭"]
+  const grouped = TYPE_ORDER.map((t) => ({
+    group: t,
+    exercises: filtered.filter((e) => e.type === t),
   })).filter((g) => g.exercises.length > 0)
 
-  function toggleExercise(id: string) {
+  const ungrouped = filtered.filter((e) => !TYPE_ORDER.includes(e.type))
+  if (ungrouped.length > 0) {
+    grouped.push({ group: "기타", exercises: ungrouped })
+  }
+
+  function toggleExercise(id: number) {
     setSelected((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
@@ -77,7 +80,7 @@ export function SelectExercisesStep({
   }
 
   function handleConfirm() {
-    const exercises = mockExercises.filter((e) => selected.has(e.id))
+    const exercises = allExercises.filter((e) => selected.has(e.id))
     onConfirm(exercises)
   }
 
@@ -96,47 +99,68 @@ export function SelectExercisesStep({
         />
       </div>
 
-      {/* 부위 필터 */}
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-        <FilterChip active={bodyPartFilter === "all"} onClick={() => setBodyPartFilter("all")}>
+      {/* 운동 구분 필터 */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">구분</span>
+        <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")}>
           전체
         </FilterChip>
-        {BODY_PARTS.map((part) => (
+        {exerciseTypes.map((t) => (
           <FilterChip
-            key={part}
-            active={bodyPartFilter === part}
-            onClick={() => setBodyPartFilter(part)}
+            key={t}
+            active={typeFilter === t}
+            onClick={() => setTypeFilter(t)}
           >
-            {BODY_PART_KO[part]}
+            {t}
           </FilterChip>
         ))}
       </div>
 
-      {/* 기구 필터 */}
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-        <FilterChip active={equipmentFilter === "all"} onClick={() => setEquipmentFilter("all")}>
+      {/* 근육군 필터 */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">부위</span>
+        <FilterChip active={muscleFilter === "all"} onClick={() => setMuscleFilter("all")}>
           전체
         </FilterChip>
-        {EQUIPMENT_TYPES.map((eq) => (
+        {MUSCLE_GROUPS.map((mg) => (
           <FilterChip
-            key={eq}
-            active={equipmentFilter === eq}
-            onClick={() => setEquipmentFilter(eq)}
+            key={mg}
+            active={muscleFilter === mg}
+            onClick={() => setMuscleFilter(mg)}
           >
-            {EQUIPMENT_KO[eq] ?? eq}
+            {mg}
           </FilterChip>
         ))}
       </div>
+
+      {/* 장비 필터 */}
+      {equipmentTypes.length > 0 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">장비</span>
+          <FilterChip active={equipmentFilter === "all"} onClick={() => setEquipmentFilter("all")}>
+            전체
+          </FilterChip>
+          {equipmentTypes.map((eq) => (
+            <FilterChip
+              key={eq}
+              active={equipmentFilter === eq}
+              onClick={() => setEquipmentFilter(eq)}
+            >
+              {eq}
+            </FilterChip>
+          ))}
+        </div>
+      )}
 
       {/* 운동 목록 */}
       <div className="flex flex-col gap-4">
         {filtered.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다.</p>
         ) : (
-          groupedByBodyPart.map(({ part, exercises }) => (
-            <div key={part} className="flex flex-col gap-2">
+          grouped.map(({ group, exercises }) => (
+            <div key={group} className="flex flex-col gap-2">
               <p className="text-xs font-semibold text-muted-foreground px-1">
-                {BODY_PART_KO[part]}
+                {group}
               </p>
               {exercises.map((exercise) => {
                 const isSelected = selected.has(exercise.id)
@@ -152,13 +176,17 @@ export function SelectExercisesStep({
                     )}
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-sm font-medium">{exercise.nameKo}</span>
-                      <span className="text-xs text-muted-foreground">{exercise.primaryMuscle}</span>
+                      <span className="text-sm font-medium">{exercise.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {exercise.muscle_group ?? exercise.type}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                      <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"}>
-                        {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
-                      </Badge>
+                      {exercise.difficulty && (
+                        <Badge variant="secondary">
+                          {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
+                        </Badge>
+                      )}
                       {isSelected && <CheckCircle2 className="size-4 text-primary" />}
                     </div>
                   </button>

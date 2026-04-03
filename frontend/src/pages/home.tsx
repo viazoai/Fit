@@ -1,23 +1,21 @@
 import { useRef } from "react"
 import { Link } from "react-router-dom"
-import { Flame, Calendar, ChevronRight, Activity, Pencil } from "lucide-react"
+import { Flame, Calendar, ChevronRight, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
-import { mockExercises } from "@/mocks"
-import { BODY_PART_KO } from "@/lib/constants"
+import { useExercises } from "@/context/exercise-context"
 import { getToday, getDaysAgo, formatDateKo } from "@/lib/date-utils"
-import { RadarChart } from "@/components/charts/RadarChart"
 import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
 
 const BG_STORAGE_KEY = "fit-home-bg"
 
 export default function HomePage() {
-  const { currentUser, partner } = useCurrentUser()
-  const { workouts } = useWorkouts()
+  const { currentUser } = useCurrentUser()
+  const { summaries } = useWorkouts()
+  const { getName } = useExercises()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleBgChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -34,30 +32,14 @@ export default function HomePage() {
 
   const today = getToday()
 
-  // 오늘 나의 운동
-  const todayWorkout = workouts.find(
-    (w) => w.userId === currentUser.id && w.date === today
+  // 오늘 나의 운동 (summaries 기반)
+  const todaySummary = summaries.find(
+    (w) => w.user_id === currentUser.id && w.date === today
   )
-
-  // 오늘 운동한 종목 목록
-  const todayExerciseIds = todayWorkout
-    ? [...new Set(todayWorkout.sets.map((s) => s.exerciseId))]
-    : []
-  const todayExercises = todayExerciseIds.map((id) =>
-    mockExercises.find((e) => e.id === id)
-  )
-
-  // 파트너 최근 운동
-  const partnerWorkouts = partner
-    ? workouts
-        .filter((w) => w.userId === partner.id)
-        .sort((a, b) => b.date.localeCompare(a.date))
-    : []
-  const partnerLatest = partnerWorkouts[0]
 
   // 나의 최근 운동 (오늘 제외, 최대 3개)
-  const recentWorkouts = workouts
-    .filter((w) => w.userId === currentUser.id && w.date !== today)
+  const recentSummaries = summaries
+    .filter((w) => w.user_id === currentUser.id && w.date !== today)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3)
 
@@ -65,11 +47,11 @@ export default function HomePage() {
     <div className="relative">
     <div className="relative px-4 py-4 space-y-4" style={{ zIndex: 10 }}>
       {/* 헤더 인사 */}
-      <div className="pt-[100px] flex items-end justify-between">
+      <div className="pt-[160px] flex items-end justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
           <h1 className="text-xl font-bold">
-            안녕하세요, {currentUser.nickname}님 👋
+            안녕하세요, {currentUser.name}님 👋
           </h1>
         </div>
         <button
@@ -94,51 +76,38 @@ export default function HomePage() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">오늘의 운동</CardTitle>
-            <Badge variant={todayWorkout ? "default" : "outline"}>
-              {todayWorkout ? "완료" : "미완료"}
+            <Badge variant={todaySummary ? "default" : "outline"}>
+              {todaySummary ? "완료" : "미완료"}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          {todayWorkout ? (
+          {todaySummary ? (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <p className="text-2xl font-bold">{todayWorkout.sets.length}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">총 세트</p>
-                </div>
-                <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <p className="text-2xl font-bold">{todayExerciseIds.length}</p>
+                  <p className="text-2xl font-bold">{todaySummary.exercise_count}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">운동 종목</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
                   <p className="text-2xl font-bold">
-                    {todayWorkout.caloriesBurned ?? "-"}
+                    {todaySummary.kcal ?? "-"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">칼로리(kcal)</p>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <p className="text-2xl font-bold">
-                    {todayWorkout.overallRpe ?? "-"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">RPE</p>
-                </div>
               </div>
-              {todayExercises.length > 0 && (
+              {todaySummary.muscle_groups.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {todayExercises.map(
-                    (ex) =>
-                      ex && (
-                        <Badge key={ex.id} variant="secondary">
-                          {BODY_PART_KO[ex.bodyPart] ?? ex.bodyPart} · {ex.nameKo}
-                        </Badge>
-                      )
-                  )}
+                  {todaySummary.muscle_groups.map((mg) => (
+                    <Badge key={mg} variant="secondary">
+                      {mg}
+                    </Badge>
+                  ))}
                 </div>
               )}
-              {todayWorkout.memo && (
+              {todaySummary.memo && (
                 <p className="text-sm text-muted-foreground">
-                  💬 {todayWorkout.memo}
+                  {todaySummary.memo}
                 </p>
               )}
             </div>
@@ -158,115 +127,8 @@ export default function HomePage() {
       {/* 이번 주 운동 현황 */}
       <WeeklyProgressCard />
 
-      {/* 체성분 분석 */}
-      {(currentUser.muscleMassKg != null || currentUser.bodyFatPct != null) && (() => {
-        const bmi =
-          currentUser.weightKg && currentUser.heightCm
-            ? currentUser.weightKg / Math.pow(currentUser.heightCm / 100, 2)
-            : 0
-
-        const radarData = [
-          // target: 권장 목표치 (체중 65kg, 골격근 35kg, 체지방 15%↓→85, BMI 22, 키 고정)
-          { label: "체중",   value: currentUser.weightKg ?? 0,                               max: 100, target: 65 },
-          { label: "골격근", value: currentUser.muscleMassKg ?? 0,                            max: 50,  target: 35 },
-          { label: "체지방↓",value: currentUser.bodyFatPct ? 100 - currentUser.bodyFatPct : 0, max: 100, target: 85 },
-          { label: "BMI",   value: bmi,                                                       max: 30,  target: 22 },
-          { label: "키",    value: currentUser.heightCm ?? 0,                                max: 200 },
-        ]
-
-        return (
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <Activity className="size-4 text-primary" />
-                <CardTitle className="text-base">체성분 분석</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-3">
-              <RadarChart data={radarData} size={180} />
-              {/* 범례 */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-0.5 rounded-full bg-accent-heat" />
-                  <span>현재</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-4 h-0.5" style={{ backgroundImage: "repeating-linear-gradient(90deg, rgb(255 107 26 / 0.5) 0 4px, transparent 4px 7px)" }} />
-                  <span>목표</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground w-full px-2">
-                {currentUser.muscleMassKg && (
-                  <div className="flex justify-between">
-                    <span>골격근량</span>
-                    <span className="font-medium text-foreground">{currentUser.muscleMassKg}kg</span>
-                  </div>
-                )}
-                {currentUser.bodyFatPct && (
-                  <div className="flex justify-between">
-                    <span>체지방률</span>
-                    <span className="font-medium text-foreground">{currentUser.bodyFatPct}%</span>
-                  </div>
-                )}
-                {bmi > 0 && (
-                  <div className="flex justify-between">
-                    <span>BMI</span>
-                    <span className="font-medium text-foreground">{bmi.toFixed(1)}</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })()}
-
-      {/* 파트너 활동 미리보기 */}
-      {partner && partnerLatest && (
-        <Card className="bg-muted/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">파트너 현황</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-3">
-              <Avatar name={partner.nickname} size="md" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">
-                  {partner.nickname}
-                  {partnerLatest.date === today
-                    ? "이(가) 오늘 운동했어요! 🎉"
-                    : getDaysAgo(partnerLatest.date, today) === 1
-                    ? "이(가) 어제 운동했어요"
-                    : `이(가) ${getDaysAgo(partnerLatest.date, today)}일 전 운동했어요`}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  {[
-                    ...new Set(
-                      partnerLatest.sets.map((s) => {
-                        const ex = mockExercises.find(
-                          (e) => e.id === s.exerciseId
-                        )
-                        return ex ? BODY_PART_KO[ex.bodyPart] ?? ex.bodyPart : ""
-                      })
-                    ),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}{" "}
-                  운동
-                </p>
-              </div>
-              <Link
-                to="/log"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronRight className="size-4" />
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* 최근 운동 기록 */}
-      {recentWorkouts.length > 0 && (
+      {recentSummaries.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -284,47 +146,38 @@ export default function HomePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-0">
-            {recentWorkouts.map((workout, idx) => {
-              const exerciseIds = [
-                ...new Set(workout.sets.map((s) => s.exerciseId)),
-              ]
-              const exercises = exerciseIds
-                .map((id) => mockExercises.find((e) => e.id === id))
-                .filter(Boolean)
-              const daysAgo = getDaysAgo(workout.date, today)
+            {recentSummaries.map((summary, idx) => {
+              const daysAgo = getDaysAgo(summary.date, today)
 
               return (
-                <div key={workout.id}>
+                <div key={summary.id}>
                   {idx > 0 && <Separator className="my-3" />}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          {formatDateKo(workout.date)}
+                          {formatDateKo(summary.date)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {daysAgo === 1 ? "어제" : `${daysAgo}일 전`}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1.5">
-                        {exercises.slice(0, 3).map(
-                          (ex) =>
-                            ex && (
-                              <Badge key={ex.id} variant="outline" className="text-xs">
-                                {ex.nameKo}
-                              </Badge>
-                            )
-                        )}
-                        {exercises.length > 3 && (
+                        {summary.muscle_groups.slice(0, 3).map((mg) => (
+                          <Badge key={mg} variant="outline" className="text-xs">
+                            {mg}
+                          </Badge>
+                        ))}
+                        {summary.muscle_groups.length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{exercises.length - 3}
+                            +{summary.muscle_groups.length - 3}
                           </Badge>
                         )}
                       </div>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-medium">
-                        {workout.caloriesBurned}
+                        {summary.kcal ?? "-"}
                         <span className="text-xs text-muted-foreground font-normal">
                           {" "}
                           kcal
@@ -333,7 +186,7 @@ export default function HomePage() {
                       <div className="flex items-center gap-1 justify-end mt-0.5">
                         <Flame className="size-3 text-accent-heat" />
                         <span className="text-xs text-muted-foreground">
-                          RPE {workout.overallRpe}
+                          {summary.exercise_count}종목
                         </span>
                       </div>
                     </div>

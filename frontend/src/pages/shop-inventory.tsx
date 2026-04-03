@@ -86,7 +86,7 @@ export default function ShopInventoryPage() {
   const [refundingCoupon, setRefundingCoupon] = useState<UserCoupon | null>(null)
 
   const myCoupons = coupons
-    .filter((c) => c.userId === currentUserId && c.status === filter)
+    .filter((c) => c.userId === String(currentUserId) && c.status === filter)
     .sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt))
 
   return (

@@ -14,7 +14,7 @@ type Step = "select-exercises" | "logging" | "complete"
 export default function WorkoutLogPage() {
   const navigate = useNavigate()
   const { currentUserId } = useCurrentUser()
-  const { workouts, addWorkout, setWorkoutActive, session, setSession, clearSession } = useWorkouts()
+  const { saveWorkout, summaries, setWorkoutActive, session, setSession, clearSession } = useWorkouts()
   const { earnPoints } = usePoints()
   const { toast } = useToast()
 
@@ -26,14 +26,12 @@ export default function WorkoutLogPage() {
   const [selectedExercises, setSelectedExercises] = useState<Exercise[]>(
     () => session?.selectedExercises ?? []
   )
-  const [startedAt, setStartedAt] = useState(() => session?.startedAt ?? "")
   const [completedExercises, setCompletedExercises] = useState<ActiveExercise[]>([])
   const [completedElapsedSec, setCompletedElapsedSec] = useState(0)
 
   function handleSelectExercises(exercises: Exercise[]) {
     const now = new Date().toISOString()
     setSelectedExercises(exercises)
-    setStartedAt(now)
     setWorkoutActive(true)
     setSession({
       step: "logging",
@@ -57,37 +55,35 @@ export default function WorkoutLogPage() {
   }
 
   function handleSaveWorkout(memo: string): EarnResult | null {
-    const now = new Date().toISOString()
-    const today = now.split("T")[0]
-    const sets = completedExercises.flatMap((ae) =>
-      ae.sets.map((s) => ({
-        id: `set-${crypto.randomUUID().slice(0, 8)}`,
-        exerciseId: s.exerciseId,
-        setNumber: s.setNumber,
-        weightKg: s.weightKg,
-        reps: s.reps,
-        rpe: s.rpe,
+    const today = new Date().toISOString().split("T")[0]
+
+    // API body 구성
+    const exerciseLogs = completedExercises
+      .filter((ae) => ae.sets.length > 0)
+      .map((ae, idx) => ({
+        exercise_id: ae.exerciseId,
+        order_index: idx,
+        sets: ae.sets.map((s) => ({
+          set_index: s.setNumber,
+          reps: s.reps,
+          weight_kg: s.weightKg,
+        })),
       }))
-    )
-    if (sets.length === 0) return null
 
-    const newSession = {
-      id: `session-${crypto.randomUUID().slice(0, 8)}`,
-      userId: currentUserId,
+    if (exerciseLogs.length === 0) return null
+
+    // 비동기 저장 — fire and forget (UI는 즉시 전환)
+    saveWorkout({
       date: today,
-      startedAt: startedAt || now,
-      finishedAt: now,
-      overallRpe: Math.round(
-        sets.reduce((sum, s) => sum + (s.rpe ?? 0), 0) / sets.length
-      ),
       memo: memo || undefined,
-      sets,
-    }
-    addWorkout(newSession)
+      exercise_logs: exerciseLogs,
+    }).catch((err) => {
+      console.error("운동 저장 실패:", err)
+      toast("운동 저장에 실패했습니다. 다시 시도해주세요.")
+    })
 
-    // 포인트 획득 (현재 workouts + 새 세션 포함하여 스트릭 계산)
-    const updatedWorkouts = [newSession, ...workouts]
-    const result = earnPoints(currentUserId, today, updatedWorkouts)
+    // 포인트 획득
+    const result = earnPoints(currentUserId, today, summaries)
 
     // 스트릭 보너스 토스트
     if (result) {

@@ -8,14 +8,12 @@ const DEFAULT_BG = "/home-bg.jpg"
 
 interface AppShellProps {
   children: ReactNode
-  currentUserId?: string
-  onUserSwitch?: () => void
+  currentUserId?: number
 }
 
 export default function AppShell({
   children,
   currentUserId,
-  onUserSwitch,
 }: AppShellProps) {
   const location = useLocation()
   const isHome = location.pathname === "/"
@@ -59,7 +57,6 @@ export default function AppShell({
 
       <Header
         currentUserId={currentUserId}
-        onUserSwitch={onUserSwitch}
         transparent={isHome && !!homeBg}
       />
       <main className="flex-1 overflow-y-auto pb-20">

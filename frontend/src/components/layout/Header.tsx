@@ -1,22 +1,46 @@
 import { Link } from "react-router-dom"
 import { Dumbbell, Flame } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
-import { mockUsers } from "@/mocks"
 import { cn } from "@/lib/utils"
+import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
-import { calcStreak, getToday } from "@/lib/date-utils"
+import { getToday } from "@/lib/date-utils"
+
+function calcStreakFromSummaries(
+  userId: number,
+  today: string,
+  summaries: { user_id: number; date: string }[],
+): number {
+  const dates = summaries
+    .filter((w) => w.user_id === userId)
+    .map((w) => w.date)
+    .sort((a, b) => b.localeCompare(a))
+  if (dates.length === 0) return 0
+  let streak = 0
+  let checkMs = new Date(today).getTime()
+  for (let i = 0; i < 365; i++) {
+    const checkStr = new Date(checkMs).toISOString().split("T")[0]
+    if (dates.includes(checkStr)) {
+      streak++
+      checkMs -= 86400000
+    } else {
+      if (i === 0) { checkMs -= 86400000; continue }
+      break
+    }
+  }
+  return streak
+}
 
 interface HeaderProps {
-  currentUserId?: string
-  onUserSwitch?: () => void
+  currentUserId?: number
   transparent?: boolean
 }
 
-export default function Header({ currentUserId = "user-1", onUserSwitch, transparent = false }: HeaderProps) {
-  const currentUser = mockUsers.find((u) => u.id === currentUserId) ?? mockUsers[0]
-  const { workouts } = useWorkouts()
+export default function Header({ transparent = false }: HeaderProps) {
+  const { currentUser } = useCurrentUser()
+  const { summaries } = useWorkouts()
   const today = getToday()
-  const streak = calcStreak(currentUserId, today, workouts)
+  const streak = calcStreakFromSummaries(currentUser.id, today, summaries)
 
   return (
     <header
@@ -56,15 +80,10 @@ export default function Header({ currentUserId = "user-1", onUserSwitch, transpa
           </span>
         </div>
 
-        {/* 사용자 아바타 (클릭 시 전환) */}
-        <button
-          type="button"
-          onClick={onUserSwitch}
-          aria-label={`현재 사용자: ${currentUser.nickname}. 클릭하여 전환`}
-          className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <Avatar name={currentUser.nickname} size="sm" />
-        </button>
+        {/* 사용자 아바타 */}
+        <div className="rounded-full">
+          <Avatar name={currentUser.name} size="sm" />
+        </div>
       </div>
     </header>
   )

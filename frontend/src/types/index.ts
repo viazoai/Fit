@@ -1,55 +1,107 @@
-export type BodyPart =
-  | "chest"
-  | "back"
-  | "shoulder"
-  | "legs"
-  | "arms"
-  | "core"
-  | "cardio"
+// ─── Backend-aligned types ───────────────────────────────────────────────────
 
-export type ExerciseType = "strength" | "cardio" | "stretching"
-export type Difficulty = "beginner" | "intermediate" | "advanced"
+export type ExerciseType = "기구" | "맨몸" | "유산소" | "스트레칭"
+
+export type MuscleGroup =
+  | "가슴"
+  | "등"
+  | "어깨"
+  | "하체"
+  | "코어"
+  | "이두"
+  | "삼두"
+  | "전신"
+  | "없음"
+
+export type Difficulty = "초급" | "중급" | "고급"
 
 export interface Exercise {
-  id: string
-  nameKo: string
-  nameEn: string
-  bodyPart: BodyPart
-  primaryMuscle: string
-  secondaryMuscle?: string
-  exerciseType: ExerciseType
-  difficulty: Difficulty
-  equipment: string
-  youtubeUrl?: string
-  youtubeStartSec?: number
-  description?: string
-  metValue?: number
+  id: number
+  name: string
+  type: ExerciseType
+  muscle_group: MuscleGroup | null
+  difficulty: Difficulty | null
+  equipment: string | null
+  youtube_url: string | null
+  met_value: number | null
+  is_active: boolean
+  created_at: string
 }
 
-export interface WorkoutSet {
-  id: string
-  exerciseId: string
-  setNumber: number
-  weightKg: number
-  reps: number
-  restSec?: number
-  rpe?: number
+// ─── Workout (3-tier: session → exercise_log → set) ─────────────────────────
+
+export interface ExerciseSetRead {
+  id: number
+  set_index: number
+  reps: number | null
+  weight_kg: number | null
+  is_assisted: boolean
+  assist_weight_kg: number | null
+  memo: string | null
 }
 
-export interface WorkoutSession {
-  id: string
-  userId: string
+export interface ExerciseLogRead {
+  id: number
+  exercise_id: number
+  order_index: number | null
+  duration_min: number | null
+  distance_km: number | null
+  speed_kmh: number | null
+  incline_pct: number | null
+  environment: "outdoor" | "treadmill" | "machine" | "cycling" | null
+  memo: string | null
+  sets: ExerciseSetRead[]
+  exercise_name: string | null
+  exercise_type: string | null
+  muscle_group: string | null
+}
+
+export interface WorkoutSessionSummary {
+  id: number
+  user_id: number
   date: string
-  overallRpe?: number
-  memo?: string
-  caloriesBurned?: number
-  startedAt?: string
-  finishedAt?: string
-  sets: WorkoutSet[]
+  memo: string | null
+  kcal: number | null
+  exercise_count: number
+  muscle_groups: string[]
 }
+
+export interface WorkoutSessionRead {
+  id: number
+  user_id: number
+  date: string
+  memo: string | null
+  kcal: number | null
+  created_at: string
+  exercise_logs: ExerciseLogRead[]
+}
+
+// ─── Calendar ────────────────────────────────────────────────────────────────
+
+export interface CalendarDay {
+  date: string
+  user_ids: number[]
+  session_count: number
+}
+
+export interface CalendarResponse {
+  year: number
+  month: number
+  days: CalendarDay[]
+}
+
+// ─── User ────────────────────────────────────────────────────────────────────
+
+export interface UserRead {
+  id: number
+  name: string
+  created_at: string
+}
+
+// ─── Active workout (local UI state for logging) ─────────────────────────────
 
 export interface ActiveSet {
-  exerciseId: string
+  exerciseId: number
   setNumber: number
   weightKg: number
   reps: number
@@ -57,23 +109,11 @@ export interface ActiveSet {
 }
 
 export interface ActiveExercise {
-  exerciseId: string
+  exerciseId: number
   sets: ActiveSet[]
 }
 
-export interface User {
-  id: string
-  nickname: string
-  weightKg?: number
-  heightCm?: number
-  age?: number
-  gender?: "male" | "female"
-  muscleMassKg?: number
-  bodyFatPct?: number
-  fitnessGoal?: string
-  equipment?: string[]
-  injuries?: string
-}
+// ─── Gamification (local-only, no backend yet) ───────────────────────────────
 
 export interface ShopItem {
   id: string

@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom"
+import { AuthProvider, useAuth } from "@/context/auth-context"
 import { UserProvider, useCurrentUser } from "@/context/user-context"
+import { ExerciseProvider } from "@/context/exercise-context"
 import { WorkoutProvider } from "@/context/workout-context"
 import { ToastProvider } from "@/context/toast-context"
 import { PointsProvider } from "@/context/points-context"
@@ -18,10 +20,10 @@ import PartnerPage from "@/pages/partner"
 import InbodyPage from "@/pages/inbody"
 
 function AppContent() {
-  const { currentUserId, switchUser } = useCurrentUser()
+  const { currentUserId } = useCurrentUser()
 
   return (
-    <AppShell currentUserId={currentUserId} onUserSwitch={switchUser}>
+    <AppShell currentUserId={currentUserId}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/log" element={<LogPage />} />
@@ -44,16 +46,36 @@ function AppContent() {
   )
 }
 
-export default function App() {
+function AuthGate() {
+  const { ready } = useAuth()
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground text-sm">로딩 중...</p>
+      </div>
+    )
+  }
+
   return (
     <UserProvider>
-      <WorkoutProvider>
-        <PointsProvider>
-          <ToastProvider>
-            <AppContent />
-          </ToastProvider>
-        </PointsProvider>
-      </WorkoutProvider>
+      <ExerciseProvider>
+        <WorkoutProvider>
+          <PointsProvider>
+            <ToastProvider>
+              <AppContent />
+            </ToastProvider>
+          </PointsProvider>
+        </WorkoutProvider>
+      </ExerciseProvider>
     </UserProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AuthGate />
+    </AuthProvider>
   )
 }

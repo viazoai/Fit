@@ -11,12 +11,12 @@ const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"]
 
 export function WeeklyProgressCard() {
   const { currentUser } = useCurrentUser()
-  const { workouts } = useWorkouts()
+  const { summaries } = useWorkouts()
   const today = getToday()
   const thisWeekDays = getThisWeekDays(today)
 
   const myWorkoutsThisWeek = thisWeekDays.filter((day) =>
-    workouts.some((w) => w.userId === currentUser.id && w.date === day)
+    summaries.some((w) => w.user_id === currentUser.id && w.date === day)
   )
   const weekProgress = Math.min(
     Math.round((myWorkoutsThisWeek.length / WEEK_GOAL) * 100),
@@ -47,8 +47,8 @@ export function WeeklyProgressCard() {
         <Progress value={weekProgress} />
         <div className="flex items-center justify-between pt-1">
           {thisWeekDays.map((day, i) => {
-            const worked = workouts.some(
-              (w) => w.userId === currentUser.id && w.date === day
+            const worked = summaries.some(
+              (w) => w.user_id === currentUser.id && w.date === day
             )
             const isToday = day === today
             return (

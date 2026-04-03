@@ -1,40 +1,22 @@
-import { createContext, useContext, useState, type ReactNode } from "react"
-import type { User } from "@/types"
-import { mockUsers } from "@/mocks"
-
-type UserId = "user-1" | "user-2"
+import { createContext, useContext, type ReactNode } from "react"
+import { useAuth } from "@/context/auth-context"
+import type { UserRead } from "@/types"
 
 interface UserContextValue {
-  currentUser: User
-  partner: User
-  currentUserId: UserId
-  switchUser: () => void
-  updateUser: (updates: Partial<User>) => void
+  currentUser: UserRead
+  currentUserId: number
 }
+
+const fallbackUser: UserRead = { id: 0, name: "...", created_at: "" }
 
 const UserContext = createContext<UserContextValue | null>(null)
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [users, setUsers] = useState<User[]>(mockUsers)
-  const [currentUserId, setCurrentUserId] = useState<UserId>("user-1")
-
-  const currentUser = users.find((u) => u.id === currentUserId) ?? users[0]
-  const partner = users.find((u) => u.id !== currentUserId) ?? users[1]
-
-  function switchUser() {
-    setCurrentUserId((prev) => (prev === "user-1" ? "user-2" : "user-1"))
-  }
-
-  function updateUser(updates: Partial<User>) {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === currentUserId ? { ...u, ...updates } : u
-      )
-    )
-  }
+  const { user } = useAuth()
+  const currentUser = user ?? fallbackUser
 
   return (
-    <UserContext value={{ currentUser, partner, currentUserId, switchUser, updateUser }}>
+    <UserContext value={{ currentUser, currentUserId: currentUser.id }}>
       {children}
     </UserContext>
   )

@@ -22,94 +22,14 @@ import {
   hasActiveTimer,
   clearTimer,
 } from "@/lib/timer-storage"
-import { useWorkouts } from "@/context/workout-context"
-import { useCurrentUser } from "@/context/user-context"
-import { mockExercises } from "@/mocks"
-import { BODY_PART_KO, BODY_PARTS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
+import { useExercises } from "@/context/exercise-context"
+import { MUSCLE_GROUPS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import type { Exercise, WorkoutSession, ActiveSet, ActiveExercise } from "@/types"
+import type { Exercise, ActiveSet, ActiveExercise } from "@/types"
 
 export type { ActiveSet, ActiveExercise }
 
-// H: 과거 기록에서 마지막 세트를 찾아 반환
-function getLastHistoricalSet(
-  exerciseId: string,
-  workouts: WorkoutSession[],
-  userId: string
-): { weightKg: number; reps: number; rpe: number } | null {
-  const sessions = workouts
-    .filter((w) => w.userId === userId && w.sets.some((s) => s.exerciseId === exerciseId))
-    .sort((a, b) => b.date.localeCompare(a.date))
-  const lastSession = sessions[0]
-  if (!lastSession) return null
-  const sets = lastSession.sets.filter((s) => s.exerciseId === exerciseId)
-  const lastSet = sets.at(-1)
-  if (!lastSet) return null
-  return { weightKg: lastSet.weightKg, reps: lastSet.reps, rpe: lastSet.rpe ?? 7 }
-}
-
-function MiniTrendChart({ exerciseId, userId }: { exerciseId: string; userId: string }) {
-  const { workouts } = useWorkouts()
-  const MAX_BARS = 8
-  const BAR_W = 10
-  const GAP = 3
-  const H = 36
-
-  const history = workouts
-    .filter((w) => w.userId === userId && w.sets.some((s) => s.exerciseId === exerciseId))
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-MAX_BARS)
-    .map((w) => {
-      const weights = w.sets
-        .filter((s) => s.exerciseId === exerciseId && s.weightKg > 0)
-        .map((s) => s.weightKg)
-      return weights.length > 0 ? Math.max(...weights) : 0
-    })
-
-  if (history.length === 0) return null
-
-  const maxVal = Math.max(...history, 1)
-  const svgW = history.length * (BAR_W + GAP) - GAP
-
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[10px] text-muted-foreground">최대 중량 추이</p>
-      <svg width={svgW} height={H} className="overflow-visible">
-        {history.map((val, i) => {
-          const barH = Math.max((val / maxVal) * (H - 12), 2)
-          const x = i * (BAR_W + GAP)
-          const y = H - barH
-          return (
-            <g key={i}>
-              <rect
-                x={x}
-                y={y}
-                width={BAR_W}
-                height={barH}
-                rx="2"
-                fill="hsl(var(--chart-1) / 0.7)"
-              />
-              {i === history.length - 1 && (
-                <text
-                  x={x + BAR_W / 2}
-                  y={y - 2}
-                  textAnchor="middle"
-                  fontSize="8"
-                  fill="currentColor"
-                  className="text-muted-foreground"
-                >
-                  {val}
-                </text>
-              )}
-            </g>
-          )
-        })}
-      </svg>
-    </div>
-  )
-}
-
-// G: 운동 추가 Dialog 내부 피커
+// 운동 추가 Dialog 내부 피커
 function ExercisePickerDialog({
   open,
   excludeIds,
@@ -117,19 +37,20 @@ function ExercisePickerDialog({
   onAdd,
 }: {
   open: boolean
-  excludeIds: Set<string>
+  excludeIds: Set<number>
   onClose: () => void
   onAdd: (exercise: Exercise) => void
 }) {
+  const { exercises: allExercises } = useExercises()
   const [search, setSearch] = useState("")
-  const [bodyPartFilter, setBodyPartFilter] = useState("all")
+  const [muscleFilter, setMuscleFilter] = useState("all")
 
-  const filtered = mockExercises.filter((e) => {
+  const filtered = allExercises.filter((e) => {
     if (excludeIds.has(e.id)) return false
-    if (bodyPartFilter !== "all" && e.bodyPart !== bodyPartFilter) return false
+    if (muscleFilter !== "all" && e.muscle_group !== muscleFilter) return false
     if (search) {
       const q = search.toLowerCase()
-      if (!e.nameKo.includes(search) && !e.nameEn.toLowerCase().includes(q)) return false
+      if (!e.name.toLowerCase().includes(q)) return false
     }
     return true
   })
@@ -153,31 +74,31 @@ function ExercisePickerDialog({
             />
           </div>
 
-          {/* 부위 필터 */}
+          {/* 근육군 필터 */}
           <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
             <button
-              onClick={() => setBodyPartFilter("all")}
+              onClick={() => setMuscleFilter("all")}
               className={cn(
                 "shrink-0 h-7 rounded-full px-3 text-xs font-medium border transition-colors",
-                bodyPartFilter === "all"
+                muscleFilter === "all"
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-border hover:bg-muted"
               )}
             >
               전체
             </button>
-            {BODY_PARTS.map((part) => (
+            {MUSCLE_GROUPS.map((mg) => (
               <button
-                key={part}
-                onClick={() => setBodyPartFilter(part)}
+                key={mg}
+                onClick={() => setMuscleFilter(mg)}
                 className={cn(
                   "shrink-0 h-7 rounded-full px-3 text-xs font-medium border transition-colors",
-                  bodyPartFilter === part
+                  muscleFilter === mg
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background text-foreground border-border hover:bg-muted"
                 )}
               >
-                {BODY_PART_KO[part]}
+                {mg}
               </button>
             ))}
           </div>
@@ -197,12 +118,16 @@ function ExercisePickerDialog({
                   className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-left hover:border-muted-foreground/30 transition-colors"
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium">{exercise.nameKo}</span>
-                    <span className="text-xs text-muted-foreground">{exercise.primaryMuscle}</span>
+                    <span className="text-sm font-medium">{exercise.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {exercise.muscle_group ?? exercise.type}
+                    </span>
                   </div>
-                  <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="shrink-0 ml-2">
-                    {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
-                  </Badge>
+                  {exercise.difficulty && (
+                    <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="shrink-0 ml-2">
+                      {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
+                    </Badge>
+                  )}
                 </button>
               ))
             )}
@@ -224,10 +149,7 @@ export function LoggingStep({
   onComplete: (activeExercises: ActiveExercise[], elapsedSec: number) => void
   onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
 }) {
-  const { workouts } = useWorkouts()
-  const { currentUserId } = useCurrentUser()
-
-  // G: exercises를 내부 state로 전환
+  // exercises를 내부 state로 전환
   const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises)
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
     if (initialActiveExercises && initialActiveExercises.length > 0) {
@@ -243,7 +165,7 @@ export function LoggingStep({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showPicker, setShowPicker] = useState(false)
 
-  // J: localStorage 기반 타이머
+  // localStorage 기반 타이머
   const [elapsedSec, setElapsedSec] = useState(0)
   const [paused, setPaused] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -252,7 +174,7 @@ export function LoggingStep({
   const [reps, setReps] = useState("")
   const [rpe, setRpe] = useState(7)
 
-  // J: 타이머 초기화 (복원 or 신규)
+  // 타이머 초기화 (복원 or 신규)
   useEffect(() => {
     if (!hasActiveTimer()) {
       startTimer()
@@ -272,26 +194,16 @@ export function LoggingStep({
     }
   }, [])
 
-  // H: 탭 전환 시 — 현재 세션 세트 없으면 과거 기록에서 자동 채움
+  // 탭 전환 시 — 마지막 세트 값 복원
   useEffect(() => {
     const lastSet = activeExercises[currentIndex]?.sets.at(-1)
     if (lastSet) {
       setWeightKg(String(lastSet.weightKg))
       setRpe(lastSet.rpe)
     } else {
-      const currentExercise = currentExercises[currentIndex]
-      if (currentExercise) {
-        const hist = getLastHistoricalSet(currentExercise.id, workouts, currentUserId)
-        if (hist) {
-          setWeightKg(String(hist.weightKg))
-          setReps(String(hist.reps))
-          setRpe(hist.rpe)
-        } else {
-          setWeightKg("")
-          setReps("")
-          setRpe(7)
-        }
-      }
+      setWeightKg("")
+      setReps("")
+      setRpe(7)
     }
   }, [currentIndex]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -329,20 +241,20 @@ export function LoggingStep({
     )
   }
 
-  // G: 운동 추가
+  // 운동 추가
   function handleAddExercise(exercise: Exercise) {
     setCurrentExercises((prev) => [...prev, exercise])
     updateActiveExercises([...activeExercises, { exerciseId: exercise.id, sets: [] }])
   }
 
-  // G: 운동 삭제
+  // 운동 삭제
   function handleRemoveExercise(index: number) {
     setCurrentExercises((prev) => prev.filter((_, i) => i !== index))
     updateActiveExercises(activeExercises.filter((_, i) => i !== index))
     setCurrentIndex((prev) => Math.min(prev, currentExercises.length - 2))
   }
 
-  // J: 일시정지 토글
+  // 일시정지 토글
   function togglePause() {
     if (paused) {
       resumeTimer()
@@ -353,7 +265,7 @@ export function LoggingStep({
     }
   }
 
-  // J: 완료 시 타이머 정리
+  // 완료 시 타이머 정리
   function handleComplete() {
     if (intervalRef.current) clearInterval(intervalRef.current)
     clearTimer()
@@ -369,7 +281,6 @@ export function LoggingStep({
         <div className="flex items-center gap-2 text-muted-foreground">
           <Timer className="size-4" />
           <span className="text-sm font-mono font-medium">{formatSeconds(elapsedSec)}</span>
-          {/* J: 일시정지 버튼 */}
           <button
             onClick={togglePause}
             className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
@@ -383,7 +294,7 @@ export function LoggingStep({
         </p>
       </div>
 
-      {/* 운동 탭 선택 (G: 탭별 × 버튼 + 끝에 + 버튼) */}
+      {/* 운동 탭 선택 */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {currentExercises.map((exercise, i) => (
           <div key={exercise.id} className="relative shrink-0">
@@ -397,14 +308,13 @@ export function LoggingStep({
                   : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30",
               ].join(" ")}
             >
-              {exercise.nameKo}
+              {exercise.name}
               {activeExercises[i].sets.length > 0 && (
                 <span className="ml-1 text-[10px] opacity-70">
                   {activeExercises[i].sets.length}세트
                 </span>
               )}
             </button>
-            {/* G: 삭제 버튼 (최소 1개일 때 숨김) */}
             {currentExercises.length > 1 && (
               <button
                 onClick={(e) => {
@@ -417,7 +327,7 @@ export function LoggingStep({
                     ? "text-primary-foreground/70 hover:text-primary-foreground"
                     : "text-muted-foreground/50 hover:text-muted-foreground",
                 ].join(" ")}
-                aria-label={`${exercise.nameKo} 삭제`}
+                aria-label={`${exercise.name} 삭제`}
               >
                 <X className="size-3" />
               </button>
@@ -425,7 +335,7 @@ export function LoggingStep({
           </div>
         ))}
 
-        {/* G: 운동 추가 버튼 */}
+        {/* 운동 추가 버튼 */}
         <button
           onClick={() => setShowPicker(true)}
           className="shrink-0 rounded-lg border border-dashed border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground transition-colors"
@@ -438,8 +348,10 @@ export function LoggingStep({
       {/* 현재 운동 카드 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{currentExercise.nameKo}</CardTitle>
-          <p className="text-xs text-muted-foreground">{currentExercise.primaryMuscle}</p>
+          <CardTitle className="text-base">{currentExercise.name}</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {currentExercise.muscle_group ?? currentExercise.type}
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {/* 이전 세트 기록 테이블 */}
@@ -508,31 +420,21 @@ export function LoggingStep({
             </div>
           </div>
 
-          {/* 트렌드 + YouTube */}
-          {(() => {
-            const hasTrend = currentExercise.equipment !== "bodyweight"
-            const hasYoutube = !!currentExercise.youtubeUrl
-            if (!hasTrend && !hasYoutube) return null
-            return (
-              <div className="flex items-end justify-between gap-3 pt-1">
-                {hasTrend && (
-                  <MiniTrendChart exerciseId={currentExercise.id} userId={currentUserId} />
-                )}
-                {hasYoutube && (
-                  <a
-                    href={currentExercise.youtubeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 shrink-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Youtube className="size-3.5" />
-                    영상 보기
-                  </a>
-                )}
-              </div>
-            )
-          })()}
+          {/* YouTube 링크 */}
+          {currentExercise.youtube_url && (
+            <div className="flex items-end justify-end pt-1">
+              <a
+                href={currentExercise.youtube_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Youtube className="size-3.5" />
+                영상 보기
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -544,7 +446,7 @@ export function LoggingStep({
         </Button>
       </div>
 
-      {/* G: 운동 추가 다이얼로그 */}
+      {/* 운동 추가 다이얼로그 */}
       <ExercisePickerDialog
         open={showPicker}
         excludeIds={currentExerciseIds}

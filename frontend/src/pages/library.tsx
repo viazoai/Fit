@@ -15,37 +15,29 @@ import {
   DialogClose,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { mockExercises } from "@/mocks"
-import { BODY_PART_KO, DIFFICULTY_KO, DIFFICULTY_VARIANT, EQUIPMENT_KO } from "@/lib/constants"
-import type { Exercise, BodyPart } from "@/types"
+import { useExercises } from "@/context/exercise-context"
+import { MUSCLE_GROUPS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
+import type { Exercise, MuscleGroup } from "@/types"
 
-type FilterBodyPart = BodyPart | "all"
+type FilterMuscle = MuscleGroup | "all"
 
-const FILTER_TABS: { value: FilterBodyPart; label: string }[] = [
+const FILTER_TABS: { value: FilterMuscle; label: string }[] = [
   { value: "all", label: "전체" },
-  { value: "chest", label: "가슴" },
-  { value: "back", label: "등" },
-  { value: "shoulder", label: "어깨" },
-  { value: "legs", label: "하체" },
-  { value: "arms", label: "팔" },
-  { value: "core", label: "코어" },
-  { value: "cardio", label: "유산소" },
+  ...MUSCLE_GROUPS.map((mg) => ({ value: mg as FilterMuscle, label: mg })),
 ]
 
 export default function LibraryPage() {
   const navigate = useNavigate()
+  const { exercises: allExercises } = useExercises()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedBodyPart, setSelectedBodyPart] = useState<FilterBodyPart>("all")
+  const [selectedMuscle, setSelectedMuscle] = useState<FilterMuscle>("all")
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
 
-  const filtered = mockExercises.filter((ex) => {
-    const matchesBodyPart = selectedBodyPart === "all" || ex.bodyPart === selectedBodyPart
+  const filtered = allExercises.filter((ex) => {
+    const matchesMuscle = selectedMuscle === "all" || ex.muscle_group === selectedMuscle
     const query = searchQuery.trim().toLowerCase()
-    const matchesSearch =
-      !query ||
-      ex.nameKo.toLowerCase().includes(query) ||
-      ex.nameEn.toLowerCase().includes(query)
-    return matchesBodyPart && matchesSearch
+    const matchesSearch = !query || ex.name.toLowerCase().includes(query)
+    return matchesMuscle && matchesSearch
   })
 
   return (
@@ -79,15 +71,15 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {/* 부위 필터 탭 */}
+        {/* 근육군 필터 탭 */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.value}
-              onClick={() => setSelectedBodyPart(tab.value)}
+              onClick={() => setSelectedMuscle(tab.value)}
               className={[
                 "shrink-0 h-8 rounded-lg px-3 text-sm font-medium transition-colors whitespace-nowrap",
-                selectedBodyPart === tab.value
+                selectedMuscle === tab.value
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted text-muted-foreground hover:text-foreground",
               ].join(" ")}
@@ -121,30 +113,27 @@ export default function LibraryPage() {
               <CardContent className="p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    {/* 이름 */}
-                    <p className="font-medium text-sm leading-tight">{exercise.nameKo}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{exercise.nameEn}</p>
+                    <p className="font-medium text-sm leading-tight">{exercise.name}</p>
 
                     {/* 배지 */}
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                      <Badge variant="secondary" className="text-xs">
-                        {BODY_PART_KO[exercise.bodyPart] ?? exercise.bodyPart}
-                      </Badge>
-                      <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="text-xs">
-                        {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
-                      </Badge>
+                      {exercise.muscle_group && (
+                        <Badge variant="secondary" className="text-xs">
+                          {exercise.muscle_group}
+                        </Badge>
+                      )}
+                      {exercise.difficulty && (
+                        <Badge variant={DIFFICULTY_VARIANT[exercise.difficulty] ?? "secondary"} className="text-xs">
+                          {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
+                        </Badge>
+                      )}
                     </div>
-
-                    {/* 주동근 */}
-                    <p className="text-xs text-muted-foreground mt-1.5">
-                      주동근: {exercise.primaryMuscle}
-                    </p>
                   </div>
 
-                  {/* 장비 */}
+                  {/* 타입 */}
                   <div className="shrink-0 text-right">
                     <span className="text-xs text-muted-foreground">
-                      {EQUIPMENT_KO[exercise.equipment] ?? exercise.equipment}
+                      {exercise.type}
                     </span>
                   </div>
                 </div>
@@ -162,54 +151,44 @@ export default function LibraryPage() {
         {selectedExercise && (
           <DialogContent className="max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedExercise.nameKo}</DialogTitle>
-              <DialogDescription>{selectedExercise.nameEn}</DialogDescription>
+              <DialogTitle>{selectedExercise.name}</DialogTitle>
+              <DialogDescription>{selectedExercise.type}</DialogDescription>
             </DialogHeader>
 
-            {/* 배지 + 장비 */}
+            {/* 배지 */}
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">
-                {BODY_PART_KO[selectedExercise.bodyPart] ?? selectedExercise.bodyPart}
-              </Badge>
-              <Badge variant={DIFFICULTY_VARIANT[selectedExercise.difficulty] ?? "secondary"}>
-                {DIFFICULTY_KO[selectedExercise.difficulty] ?? selectedExercise.difficulty}
-              </Badge>
-              <span className="inline-flex items-center h-5 px-2 text-xs text-muted-foreground bg-muted rounded-full">
-                {EQUIPMENT_KO[selectedExercise.equipment] ?? selectedExercise.equipment}
-              </span>
+              {selectedExercise.muscle_group && (
+                <Badge variant="secondary">
+                  {selectedExercise.muscle_group}
+                </Badge>
+              )}
+              {selectedExercise.difficulty && (
+                <Badge variant={DIFFICULTY_VARIANT[selectedExercise.difficulty] ?? "secondary"}>
+                  {DIFFICULTY_KO[selectedExercise.difficulty] ?? selectedExercise.difficulty}
+                </Badge>
+              )}
+              {selectedExercise.equipment && (
+                <span className="inline-flex items-center h-5 px-2 text-xs text-muted-foreground bg-muted rounded-full">
+                  {selectedExercise.equipment}
+                </span>
+              )}
             </div>
 
             <Separator />
 
-            {/* 근육 정보 */}
-            <div className="space-y-2">
+            {/* MET */}
+            {selectedExercise.met_value != null && (
               <div className="flex gap-2">
-                <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">주동근</span>
-                <span className="text-sm">{selectedExercise.primaryMuscle}</span>
+                <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">MET</span>
+                <span className="text-sm">{String(selectedExercise.met_value)}</span>
               </div>
-              {selectedExercise.secondaryMuscle && (
-                <div className="flex gap-2">
-                  <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">보조근</span>
-                  <span className="text-sm">{selectedExercise.secondaryMuscle}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 운동 설명 */}
-            {selectedExercise.description && (
-              <>
-                <Separator />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedExercise.description}
-                </p>
-              </>
             )}
 
             {/* YouTube 링크 */}
-            {selectedExercise.youtubeUrl && (
+            {selectedExercise.youtube_url && (
               <div>
                 <a
-                  href={selectedExercise.youtubeUrl}
+                  href={selectedExercise.youtube_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm text-primary font-medium"

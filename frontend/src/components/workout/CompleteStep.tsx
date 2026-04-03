@@ -81,7 +81,7 @@ export function CompleteStep({
                 const maxWeight = Math.max(...ae.sets.map((s) => s.weightKg))
                 return (
                   <div key={ae.exerciseId} className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{exercise?.nameKo ?? ae.exerciseId}</span>
+                    <span className="font-medium">{exercise?.name ?? `#${ae.exerciseId}`}</span>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{ae.sets.length}세트</span>
                       {maxWeight > 0 && <span>최대 {maxWeight}kg</span>}

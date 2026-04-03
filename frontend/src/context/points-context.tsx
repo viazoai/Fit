@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import type { ShopItem, UserCoupon, PointLedgerEntry, WorkoutSession } from "@/types"
+import type { ShopItem, UserCoupon, PointLedgerEntry, WorkoutSessionSummary } from "@/types"
 import { DEFAULT_SHOP_ITEMS } from "@/mocks/shop-items"
 
 const KEY_BALANCE = (userId: string) => `fit_points_balance_${userId}`
@@ -20,11 +20,12 @@ function save(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
-const USER_IDS = ["user-1", "user-2"]
+// Gamification은 localStorage 기반이므로 userId를 문자열로 사용
+const userIdStr = (id: number | string) => String(id)
 
-function calcStreak(userId: string, date: string, workouts: WorkoutSession[]): number {
+function calcStreak(userId: number, date: string, workouts: WorkoutSessionSummary[]): number {
   const dates = workouts
-    .filter((w) => w.userId === userId)
+    .filter((w) => w.user_id === userId)
     .map((w) => w.date)
     .sort((a, b) => b.localeCompare(a))
   if (dates.length === 0) return 0
@@ -57,7 +58,7 @@ interface PointsContextValue {
   history: PointLedgerEntry[]
   coupons: UserCoupon[]
   shopItems: ShopItem[]
-  earnPoints: (userId: string, date: string, workouts: WorkoutSession[]) => EarnResult | null
+  earnPoints: (userId: number, date: string, workouts: WorkoutSessionSummary[]) => EarnResult | null
   purchaseItem: (userId: string, item: ShopItem) => boolean
   useItem: (couponId: string) => void
   refundItem: (couponId: string) => void
@@ -71,11 +72,8 @@ const PointsContext = createContext<PointsContextValue | null>(null)
 
 export function PointsProvider({ children }: { children: ReactNode }) {
   const [balances, setBalances] = useState<Record<string, number>>(() => {
-    const result: Record<string, number> = {}
-    for (const uid of USER_IDS) {
-      result[uid] = load(KEY_BALANCE(uid), 0)
-    }
-    return result
+    // 기존 localStorage 키와 호환
+    return {}
   })
 
   const [history, setHistory] = useState<PointLedgerEntry[]>(() =>
@@ -92,20 +90,22 @@ export function PointsProvider({ children }: { children: ReactNode }) {
 
   const shopItems = [...DEFAULT_SHOP_ITEMS, ...customItems]
 
-  function getBalance(userId: string): number {
-    return balances[userId] ?? 0
+  function getBalance(userId: string | number): number {
+    const key = userIdStr(userId)
+    return balances[key] ?? load(KEY_BALANCE(key), 0)
   }
 
-  function devAddPoints(userId: string, amount: number) {
-    const newBalance = (balances[userId] ?? 0) + amount
+  function devAddPoints(userId: string | number, amount: number) {
+    const uid = userIdStr(userId)
+    const newBalance = (balances[uid] ?? load(KEY_BALANCE(uid), 0)) + amount
     setBalances((prev) => {
-      const updated = { ...prev, [userId]: newBalance }
-      save(KEY_BALANCE(userId), newBalance)
+      const updated = { ...prev, [uid]: newBalance }
+      save(KEY_BALANCE(uid), newBalance)
       return updated
     })
     const entry: PointLedgerEntry = {
       id: crypto.randomUUID().slice(0, 8),
-      userId,
+      userId: uid,
       amount,
       reason: "[개발] 포인트 추가",
       balance: newBalance,
@@ -119,10 +119,10 @@ export function PointsProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  function earnPoints(userId: string, date: string, workouts: WorkoutSession[]): EarnResult | null {
+  function earnPoints(userId: number, date: string, workouts: WorkoutSessionSummary[]): EarnResult | null {
     // 하루 1회만 세션 완료 포인트 지급
     const alreadyEarned = history.some(
-      (e) => e.userId === userId && e.reason === "운동 완료" && e.date === date
+      (e) => e.userId === String(userId) && e.reason === "운동 완료" && e.date === date
     )
     if (alreadyEarned) return null
 
@@ -140,21 +140,21 @@ export function PointsProvider({ children }: { children: ReactNode }) {
     }
 
     // 커플 보너스
-    const partnerId = userId === "user-1" ? "user-2" : "user-1"
     const partnerWorkedToday = workouts.some(
-      (w) => w.userId === partnerId && w.date === date
+      (w) => w.user_id !== userId && w.date === date
     )
     if (partnerWorkedToday) {
       breakdown.push({ reason: "커플 동시 운동 보너스", amount: 50 })
     }
 
     const totalEarned = breakdown.reduce((sum, b) => sum + b.amount, 0)
-    const currentBalance = balances[userId] ?? 0
+    const uid = userIdStr(userId)
+    const currentBalance = balances[uid] ?? load(KEY_BALANCE(uid), 0)
     const newBalance = currentBalance + totalEarned
 
     setBalances((prev) => {
-      const updated = { ...prev, [userId]: newBalance }
-      save(KEY_BALANCE(userId), newBalance)
+      const updated = { ...prev, [uid]: newBalance }
+      save(KEY_BALANCE(uid), newBalance)
       return updated
     })
 
@@ -164,7 +164,7 @@ export function PointsProvider({ children }: { children: ReactNode }) {
       runningBalance += amount
       return {
         id: crypto.randomUUID().slice(0, 8),
-        userId,
+        userId: uid,
         amount,
         reason,
         balance: runningBalance,
@@ -182,20 +182,21 @@ export function PointsProvider({ children }: { children: ReactNode }) {
     return { totalEarned, breakdown }
   }
 
-  function purchaseItem(userId: string, item: ShopItem): boolean {
-    const balance = balances[userId] ?? 0
+  function purchaseItem(userId: string | number, item: ShopItem): boolean {
+    const uid = userIdStr(userId)
+    const balance = balances[uid] ?? load(KEY_BALANCE(uid), 0)
     if (balance < item.price) return false
 
     const newBalance = balance - item.price
     setBalances((prev) => {
-      const updated = { ...prev, [userId]: newBalance }
-      save(KEY_BALANCE(userId), newBalance)
+      const updated = { ...prev, [uid]: newBalance }
+      save(KEY_BALANCE(uid), newBalance)
       return updated
     })
 
     const entry: PointLedgerEntry = {
       id: crypto.randomUUID().slice(0, 8),
-      userId,
+      userId: uid,
       amount: -item.price,
       reason: `${item.name} 구매`,
       balance: newBalance,

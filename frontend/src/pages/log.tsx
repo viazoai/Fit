@@ -1,16 +1,16 @@
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, Timer, ChevronDown, ChevronUp } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
-import { mockExercises, mockUsers } from "@/mocks"
 import { WEEKDAY_LABELS } from "@/lib/constants"
-import { getToday, formatDateKo, formatDuration, calcStreak } from "@/lib/date-utils"
+import { getToday, formatDateKo } from "@/lib/date-utils"
 import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
-import type { WorkoutSession } from "@/types"
+import { getWorkout, getCalendar } from "@/lib/api"
+import type { WorkoutSessionSummary, WorkoutSessionRead, CalendarDay } from "@/types"
 
 
 // ─── 달력 유틸 ───────────────────────────────────────────────────────────────
@@ -28,46 +28,47 @@ function toDateStr(year: number, month: number, day: number): string {
 }
 
 
-function getExerciseName(id: string) {
-  return mockExercises.find((e) => e.id === id)?.nameKo ?? id
-}
-
 // ─── 운동 세션 카드 (리스트/캘린더 모드 공유) ─────────────────────────────────
 
-function WorkoutSessionCard({
-  session,
+function WorkoutSummaryCard({
+  summary,
   titleOverride,
 }: {
-  session: WorkoutSession
+  summary: WorkoutSessionSummary
   titleOverride?: string
 }) {
   const [expanded, setExpanded] = useState(false)
-  const uniqueExerciseIds = [...new Set(session.sets.map((s) => s.exerciseId))]
-  const exerciseNames = uniqueExerciseIds.map(getExerciseName)
-  const duration =
-    session.startedAt && session.finishedAt
-      ? formatDuration(session.startedAt, session.finishedAt)
-      : null
+  const [detail, setDetail] = useState<WorkoutSessionRead | null>(null)
+
+  async function handleToggle() {
+    const next = !expanded
+    setExpanded(next)
+    if (next && !detail) {
+      try {
+        const d = await getWorkout(summary.id)
+        setDetail(d)
+      } catch (err) {
+        console.error("세션 상세 로드 실패:", err)
+      }
+    }
+  }
 
   return (
     <Card
       className="cursor-pointer transition-colors hover:bg-muted/30"
-      onClick={() => setExpanded((v) => !v)}
+      onClick={handleToggle}
     >
       <CardContent className="py-2 px-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-semibold">
-              {titleOverride ?? formatDateKo(session.date)}
+              {titleOverride ?? formatDateKo(summary.date)}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {exerciseNames.join(" · ")}
+              {summary.muscle_groups.join(" · ")}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {session.overallRpe != null && (
-              <span className="text-xs text-muted-foreground">RPE {session.overallRpe}</span>
-            )}
             {expanded ? (
               <ChevronUp className="size-4 text-muted-foreground" />
             ) : (
@@ -81,54 +82,46 @@ function WorkoutSessionCard({
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Dumbbell className="size-3" />
-            {session.sets.length}세트
+            {summary.exercise_count}종목
           </span>
-          {session.caloriesBurned != null && (
+          {summary.kcal != null && (
             <span className="flex items-center gap-1">
               <Zap className="size-3" />
-              {session.caloriesBurned}kcal
-            </span>
-          )}
-          {duration != null && (
-            <span className="flex items-center gap-1">
-              <Timer className="size-3" />
-              {duration}
+              {summary.kcal}kcal
             </span>
           )}
         </div>
 
-        {session.memo && (
+        {summary.memo && (
           <p className="mt-2 text-xs text-muted-foreground line-clamp-2 italic">
-            "{session.memo}"
+            "{summary.memo}"
           </p>
         )}
 
-        {expanded && (
+        {expanded && detail && (
           <div className="mt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
             <Separator />
-            {uniqueExerciseIds.map((exId) => {
-              const name = getExerciseName(exId)
-              const sets = session.sets.filter((s) => s.exerciseId === exId)
-              return (
-                <div key={exId}>
-                  <p className="text-xs font-semibold mb-1.5">{name}</p>
-                  <div className="grid grid-cols-3 text-[11px] font-medium text-muted-foreground mb-1">
-                    <span>세트</span>
-                    <span className="text-right">무게</span>
-                    <span className="text-right">횟수</span>
-                  </div>
-                  {sets.map((set) => (
-                    <div key={set.id} className="grid grid-cols-3 text-xs">
-                      <span>{set.setNumber}</span>
-                      <span className="text-right">
-                        {set.weightKg > 0 ? `${set.weightKg}kg` : "-"}
-                      </span>
-                      <span className="text-right">{set.reps}회</span>
-                    </div>
-                  ))}
+            {detail.exercise_logs.map((log) => (
+              <div key={log.id}>
+                <p className="text-xs font-semibold mb-1.5">
+                  {log.exercise_name ?? `운동 #${log.exercise_id}`}
+                </p>
+                <div className="grid grid-cols-3 text-[11px] font-medium text-muted-foreground mb-1">
+                  <span>세트</span>
+                  <span className="text-right">무게</span>
+                  <span className="text-right">횟수</span>
                 </div>
-              )
-            })}
+                {log.sets.map((set) => (
+                  <div key={set.id} className="grid grid-cols-3 text-xs">
+                    <span>{set.set_index}</span>
+                    <span className="text-right">
+                      {set.weight_kg && set.weight_kg > 0 ? `${set.weight_kg}kg` : "-"}
+                    </span>
+                    <span className="text-right">{set.reps ?? "-"}회</span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
@@ -141,17 +134,17 @@ function WorkoutSessionCard({
 
 function ListMode() {
   const { currentUser } = useCurrentUser()
-  const { workouts } = useWorkouts()
+  const { summaries } = useWorkouts()
 
-  const userWorkouts = workouts
-    .filter((w) => w.userId === currentUser.id)
+  const userSummaries = summaries
+    .filter((w) => w.user_id === currentUser.id)
     .sort((a, b) => b.date.localeCompare(a.date))
 
   return (
     <div className="space-y-4">
       <WeeklyProgressCard />
 
-      {userWorkouts.length === 0 ? (
+      {userSummaries.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <Dumbbell className="size-10 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -160,8 +153,8 @@ function ListMode() {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {userWorkouts.map((session) => (
-            <WorkoutSessionCard key={session.id} session={session} />
+          {userSummaries.map((summary) => (
+            <WorkoutSummaryCard key={summary.id} summary={summary} />
           ))}
         </div>
       )}
@@ -173,15 +166,47 @@ function ListMode() {
 
 function CalendarMode() {
   const { currentUser } = useCurrentUser()
-  const { workouts } = useWorkouts()
+  const { summaries } = useWorkouts()
 
   const today = getToday()
   const todayDate = new Date(today)
   const [viewYear, setViewYear] = useState(todayDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(todayDate.getMonth())
   const [selectedDate, setSelectedDate] = useState<string>(today)
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([])
 
-  const streak = calcStreak(currentUser.id, today, workouts)
+  // 캘린더 API 호출
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await getCalendar(viewYear, viewMonth + 1) // API는 1-indexed month
+        setCalendarDays(res.days)
+      } catch (err) {
+        console.error("캘린더 로드 실패:", err)
+      }
+    }
+    load()
+  }, [viewYear, viewMonth])
+
+  // 스트릭 계산
+  const myDates = summaries
+    .filter((w) => w.user_id === currentUser.id)
+    .map((w) => w.date)
+    .sort((a, b) => b.localeCompare(a))
+  let streak = 0
+  {
+    let checkMs = new Date(today).getTime()
+    for (let i = 0; i < 365; i++) {
+      const checkStr = new Date(checkMs).toISOString().split("T")[0]
+      if (myDates.includes(checkStr)) {
+        streak++
+        checkMs -= 86400000
+      } else {
+        if (i === 0) { checkMs -= 86400000; continue }
+        break
+      }
+    }
+  }
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDayOfWeek = getFirstDayOfMonth(viewYear, viewMonth)
@@ -199,11 +224,11 @@ function CalendarMode() {
     else setViewMonth((m) => m + 1)
   }
 
-  const selectedWorkouts = workouts.filter((w) => w.date === selectedDate)
+  // 선택한 날짜의 운동 요약
+  const selectedSummaries = summaries.filter((w) => w.date === selectedDate)
 
-  // 사용자 닉네임 첫 글자 (캘린더 셀에 표시)
-  const user1 = mockUsers.find((u) => u.id === "user-1")
-  const user2 = mockUsers.find((u) => u.id === "user-2")
+  // calendarDays lookup
+  const dayMap = new Map(calendarDays.map((d) => [d.date, d]))
 
   return (
     <div className="space-y-4">
@@ -246,8 +271,8 @@ function CalendarMode() {
               const dateStr = toDateStr(viewYear, viewMonth, day)
               const isToday = dateStr === today
               const isSelected = dateStr === selectedDate
-              const user1Worked = workouts.some((w) => w.userId === "user-1" && w.date === dateStr)
-              const user2Worked = workouts.some((w) => w.userId === "user-2" && w.date === dateStr)
+              const calDay = dayMap.get(dateStr)
+              const hasWorkout = calDay && calDay.session_count > 0
 
               return (
                 <button
@@ -268,34 +293,15 @@ function CalendarMode() {
                   >
                     {day}
                   </span>
-                  {/* 이름 표시 */}
-                  <div className="flex items-center gap-0.5 h-3.5">
-                    {user1Worked && (
-                      <span className="text-[9px] font-medium text-primary leading-none">
-                        {user1?.nickname.slice(0, 1)}
-                      </span>
-                    )}
-                    {user2Worked && (
-                      <span className="text-[9px] font-medium text-chart-2 leading-none">
-                        {user2?.nickname.slice(0, 1)}
-                      </span>
+                  {/* 운동 표시 도트 */}
+                  <div className="flex items-center gap-0.5 h-2">
+                    {hasWorkout && (
+                      <span className="size-1.5 rounded-full bg-primary" />
                     )}
                   </div>
                 </button>
               )
             })}
-          </div>
-
-          {/* 범례 */}
-          <div className="flex items-center gap-4 pt-1 justify-end">
-            <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-primary" />
-              <span className="text-xs text-muted-foreground">{user1?.nickname}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-chart-2" />
-              <span className="text-xs text-muted-foreground">{user2?.nickname}</span>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -309,7 +315,7 @@ function CalendarMode() {
           })()}
         </h3>
 
-        {selectedWorkouts.length === 0 ? (
+        {selectedSummaries.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center">
               <p className="text-sm text-muted-foreground">이 날은 운동 기록이 없어요</p>
@@ -317,16 +323,12 @@ function CalendarMode() {
           </Card>
         ) : (
           <div className="flex flex-col gap-3">
-            {selectedWorkouts.map((session) => {
-              const user = mockUsers.find((u) => u.id === session.userId)
-              return (
-                <WorkoutSessionCard
-                  key={session.id}
-                  session={session}
-                  titleOverride={user?.nickname}
-                />
-              )
-            })}
+            {selectedSummaries.map((summary) => (
+              <WorkoutSummaryCard
+                key={summary.id}
+                summary={summary}
+              />
+            ))}
           </div>
         )}
       </div>
