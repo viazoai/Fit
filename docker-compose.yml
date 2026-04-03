@@ -26,7 +26,7 @@ services:
     build: ./backend
     container_name: fit-api
     ports:
-      - "3212:8000"
+      - "3213:8000"
     environment:
       - DATABASE_URL=postgresql://fit:fit@db:5432/fit
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
@@ -39,7 +39,7 @@ services:
     image: adminer:latest
     container_name: fit-adminer
     ports:
-      - "3211:8080"
+      - "3212:8080"
     environment:
       - TZ=Asia/Seoul
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: fit-tunnel
-    command: tunnel run
+    command: tunnel --no-autoupdate run
     environment:
       - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
     restart: unless-stopped

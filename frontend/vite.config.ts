@@ -44,10 +44,25 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/react-router-dom")) {
+            return "vendor-react"
+          }
+          if (id.includes("node_modules/lucide-react") || id.includes("node_modules/@radix-ui")) {
+            return "vendor-ui"
+          }
+        },
+      },
+    },
+  },
   server: {
+    port: 3211,
     allowedHosts: ["fit.zoai.uk"],
     proxy: {
-      "/api": "http://localhost:3212",
+      "/api": "http://localhost:3213",
     },
   },
 })

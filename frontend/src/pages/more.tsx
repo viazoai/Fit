@@ -70,9 +70,9 @@ export default function MorePage() {
           <div className="relative flex items-center rounded-lg bg-secondary p-1">
             {/* 슬라이딩 필 */}
             <div
-              className="absolute top-1 bottom-1 w-[72px] rounded-md bg-card border border-border shadow-sm transition-all duration-200 ease-in-out"
+              className="absolute top-1 bottom-1 w-[56px] rounded-md bg-card border border-border shadow-sm transition-all duration-200 ease-in-out"
               style={{
-                left: `calc(4px + ${THEME_OPTIONS.findIndex((o) => o.value === theme)} * 72px)`,
+                left: `calc(4px + ${THEME_OPTIONS.findIndex((o) => o.value === theme)} * 56px)`,
               }}
             />
             {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
@@ -80,11 +80,11 @@ export default function MorePage() {
                 key={value}
                 onClick={() => setTheme(value)}
                 className={cn(
-                  "relative z-10 flex w-[72px] items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors duration-200",
+                  "relative z-10 flex w-[56px] items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition-colors duration-200",
                   theme === value ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className="size-3.5" />
+                <Icon className="size-3" />
                 {label}
               </button>
             ))}
