@@ -4,10 +4,14 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCurrentUser } from "@/context/user-context"
+import { mockUsers } from "@/mocks"
 
 export default function PartnerPage() {
   const navigate = useNavigate()
-  const { partner } = useCurrentUser()
+  const { currentUser } = useCurrentUser()
+
+  // 현재 사용자가 아닌 나머지 사용자를 파트너로 표시
+  const partner = mockUsers.find((u) => u.id !== currentUser.id) ?? null
 
   return (
     <div className="flex flex-col pb-8">
@@ -25,9 +29,9 @@ export default function PartnerPage() {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-3">
-                <Avatar name={partner.nickname} size="lg" />
+                <Avatar name={partner.name} size="lg" />
                 <div>
-                  <p className="text-sm font-semibold">{partner.nickname}</p>
+                  <p className="text-sm font-semibold">{partner.name}</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <Badge variant="secondary" className="text-xs">
                       파트너 운동 공유 중

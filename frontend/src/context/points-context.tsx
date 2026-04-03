@@ -54,18 +54,18 @@ export interface EarnResult {
 }
 
 interface PointsContextValue {
-  getBalance: (userId: string) => number
+  getBalance: (userId: string | number) => number
   history: PointLedgerEntry[]
   coupons: UserCoupon[]
   shopItems: ShopItem[]
   earnPoints: (userId: number, date: string, workouts: WorkoutSessionSummary[]) => EarnResult | null
-  purchaseItem: (userId: string, item: ShopItem) => boolean
+  purchaseItem: (userId: string | number, item: ShopItem) => boolean
   useItem: (couponId: string) => void
   refundItem: (couponId: string) => void
   addCustomItem: (item: Omit<ShopItem, "id" | "isCustom">) => void
   updateCustomItem: (id: string, updates: Partial<Pick<ShopItem, "name" | "description" | "price">>) => void
   deleteCustomItem: (id: string) => void
-  devAddPoints: (userId: string, amount: number) => void
+  devAddPoints: (userId: string | number, amount: number) => void
 }
 
 const PointsContext = createContext<PointsContextValue | null>(null)
@@ -211,7 +211,7 @@ export function PointsProvider({ children }: { children: ReactNode }) {
 
     const coupon: UserCoupon = {
       id: crypto.randomUUID().slice(0, 8),
-      userId,
+      userId: uid,
       itemId: item.id,
       itemName: item.name,
       price: item.price,

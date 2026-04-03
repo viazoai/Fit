@@ -27,35 +27,43 @@ const FITNESS_GOALS = [
   "유지",
 ]
 
-const GENDER_KO: Record<string, string> = {
-  male: "남성",
-  female: "여성",
+const LS_KEY = (userId: number) => `fit_profile_${userId}`
+
+interface LocalProfile {
+  fitnessGoal: string
+  equipment: string[]
+  heightCm: string
+  weightKg: string
+  age: string
+  injuries: string
+}
+
+function loadProfile(userId: number): LocalProfile {
+  try {
+    const raw = localStorage.getItem(LS_KEY(userId))
+    return raw ? JSON.parse(raw) : { fitnessGoal: "", equipment: [], heightCm: "", weightKg: "", age: "", injuries: "" }
+  } catch {
+    return { fitnessGoal: "", equipment: [], heightCm: "", weightKg: "", age: "", injuries: "" }
+  }
+}
+
+function saveProfile(userId: number, profile: LocalProfile) {
+  localStorage.setItem(LS_KEY(userId), JSON.stringify(profile))
 }
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { currentUser, updateUser } = useCurrentUser()
+  const { currentUser, currentUserId } = useCurrentUser()
   const { toast } = useToast()
 
-  // 운동 목표 local state
-  const [fitnessGoal, setFitnessGoal] = useState(currentUser.fitnessGoal ?? "")
+  const initialProfile = loadProfile(currentUserId)
 
-  // 보유 장비 local state
-  const [selectedEquipment, setSelectedEquipment] = useState<string[]>(
-    currentUser.equipment ?? []
-  )
-
-  // 신체 정보 local state
-  const [heightCm, setHeightCm] = useState(
-    currentUser.heightCm !== undefined ? String(currentUser.heightCm) : ""
-  )
-  const [weightKg, setWeightKg] = useState(
-    currentUser.weightKg !== undefined ? String(currentUser.weightKg) : ""
-  )
-  const [age, setAge] = useState(
-    currentUser.age !== undefined ? String(currentUser.age) : ""
-  )
-  const [injuries, setInjuries] = useState(currentUser.injuries ?? "")
+  const [fitnessGoal, setFitnessGoal] = useState(initialProfile.fitnessGoal)
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>(initialProfile.equipment)
+  const [heightCm, setHeightCm] = useState(initialProfile.heightCm)
+  const [weightKg, setWeightKg] = useState(initialProfile.weightKg)
+  const [age, setAge] = useState(initialProfile.age)
+  const [injuries, setInjuries] = useState(initialProfile.injuries)
 
   function toggleEquipment(value: string) {
     setSelectedEquipment((prev) =>
@@ -64,13 +72,13 @@ export default function ProfilePage() {
   }
 
   function handleSave() {
-    updateUser({
+    saveProfile(currentUserId, {
       fitnessGoal,
       equipment: selectedEquipment,
-      heightCm: heightCm ? parseFloat(heightCm) : undefined,
-      weightKg: weightKg ? parseFloat(weightKg) : undefined,
-      age: age ? parseInt(age) : undefined,
-      injuries: injuries || undefined,
+      heightCm,
+      weightKg,
+      age,
+      injuries,
     })
     toast("저장되었어요")
   }
@@ -86,40 +94,35 @@ export default function ProfilePage() {
           <h1 className="text-xl font-bold">프로필 설정</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Avatar name={currentUser.nickname} size="lg" />
+          <Avatar name={currentUser.name} size="lg" />
           <div>
-            <p className="text-lg font-semibold">{currentUser.nickname}</p>
-            {(currentUser.age || currentUser.gender) && (
+            <p className="text-lg font-semibold">{currentUser.name}</p>
+            {age && (
               <p className="text-sm text-muted-foreground">
-                {[
-                  currentUser.age ? `${currentUser.age}세` : null,
-                  currentUser.gender ? GENDER_KO[currentUser.gender] : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
+                {age}세
               </p>
             )}
           </div>
         </div>
 
         {/* 신체 정보 카드 */}
-        {(currentUser.heightCm || currentUser.weightKg) && (
+        {(heightCm || weightKg) && (
           <div className="grid grid-cols-2 gap-3 mt-4">
-            {currentUser.heightCm && (
+            {heightCm && (
               <Card>
                 <CardContent className="p-3 text-center">
                   <p className="text-xs text-muted-foreground">키</p>
-                  <p className="text-lg font-semibold mt-0.5">{currentUser.heightCm}
+                  <p className="text-lg font-semibold mt-0.5">{heightCm}
                     <span className="text-xs text-muted-foreground font-normal ml-0.5">cm</span>
                   </p>
                 </CardContent>
               </Card>
             )}
-            {currentUser.weightKg && (
+            {weightKg && (
               <Card>
                 <CardContent className="p-3 text-center">
                   <p className="text-xs text-muted-foreground">몸무게</p>
-                  <p className="text-lg font-semibold mt-0.5">{currentUser.weightKg}
+                  <p className="text-lg font-semibold mt-0.5">{weightKg}
                     <span className="text-xs text-muted-foreground font-normal ml-0.5">kg</span>
                   </p>
                 </CardContent>

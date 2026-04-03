@@ -1,28 +1,14 @@
-import type { User } from "@/types"
+import type { UserRead } from "@/types"
 
-export const mockUsers: User[] = [
+export const mockUsers: UserRead[] = [
   {
-    id: "user-1",
-    nickname: "형준",
-    gender: "male",
-    age: 32,
-    weightKg: 78,
-    heightCm: 178,
-    muscleMassKg: 35.2,
-    bodyFatPct: 18.5,
-    fitnessGoal: "근력 향상",
-    equipment: ["barbell", "dumbbell", "cable"],
+    id: 1,
+    name: "형준",
+    created_at: "2026-01-01T00:00:00",
   },
   {
-    id: "user-2",
-    nickname: "윤희",
-    gender: "female",
-    age: 30,
-    weightKg: 55,
-    heightCm: 163,
-    muscleMassKg: 22.1,
-    bodyFatPct: 24.3,
-    fitnessGoal: "체지방 감소",
-    equipment: ["dumbbell", "machine"],
+    id: 2,
+    name: "윤희",
+    created_at: "2026-01-01T00:00:00",
   },
 ]

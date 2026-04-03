@@ -1,30 +1,24 @@
 import { useState } from "react"
-import { Dumbbell, Zap, Timer, ChevronDown, ChevronUp } from "lucide-react"
+import { Dumbbell, Zap, ChevronDown, ChevronUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { mockExercises } from "@/mocks"
-import { formatDateKo, formatDuration } from "@/lib/date-utils"
-import type { WorkoutSession } from "@/types"
-
-function getExerciseName(exerciseId: string): string {
-  return mockExercises.find((e) => e.id === exerciseId)?.nameKo ?? exerciseId
-}
+import { formatDateKo } from "@/lib/date-utils"
+import type { WorkoutSessionSummary } from "@/types"
 
 export function WorkoutListStep({
   userId,
   workouts,
 }: {
-  userId: string
-  workouts: WorkoutSession[]
+  userId: number
+  workouts: WorkoutSessionSummary[]
 }) {
-  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null)
+  const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null)
 
   const userWorkouts = workouts
-    .filter((w) => w.userId === userId)
+    .filter((w) => w.user_id === userId)
     .sort((a, b) => b.date.localeCompare(a.date))
 
-  function toggleExpand(id: string) {
+  function toggleExpand(id: number) {
     setExpandedSessionId((prev) => (prev === id ? null : id))
   }
 
@@ -44,12 +38,6 @@ export function WorkoutListStep({
       ) : (
         <div className="flex flex-col gap-3">
           {userWorkouts.map((session) => {
-            const uniqueExerciseIds = [...new Set(session.sets.map((s) => s.exerciseId))]
-            const exerciseNames = uniqueExerciseIds.map(getExerciseName)
-            const duration =
-              session.startedAt && session.finishedAt
-                ? formatDuration(session.startedAt, session.finishedAt)
-                : null
             const isExpanded = expandedSessionId === session.id
 
             return (
@@ -62,14 +50,14 @@ export function WorkoutListStep({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1 min-w-0">
                       <p className="text-sm font-semibold">{formatDateKo(session.date)}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {exerciseNames.join(" · ")}
-                      </p>
+                      {session.muscle_groups.length > 0 && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {session.muscle_groups.join(" · ")}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {session.overallRpe != null && (
-                        <Badge variant="outline">RPE {session.overallRpe}</Badge>
-                      )}
+                      <Badge variant="outline">{session.exercise_count}종목</Badge>
                       {isExpanded ? (
                         <ChevronUp className="size-4 text-muted-foreground" />
                       ) : (
@@ -78,23 +66,15 @@ export function WorkoutListStep({
                     </div>
                   </div>
 
-                  <Separator className="my-3" />
-
-                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-3">
                     <span className="flex items-center gap-1">
                       <Dumbbell className="size-3" />
-                      {session.sets.length}세트
+                      {session.exercise_count}종목
                     </span>
-                    {session.caloriesBurned != null && (
+                    {session.kcal != null && (
                       <span className="flex items-center gap-1">
                         <Zap className="size-3" />
-                        {session.caloriesBurned}kcal
-                      </span>
-                    )}
-                    {duration != null && (
-                      <span className="flex items-center gap-1">
-                        <Timer className="size-3" />
-                        {duration}
+                        {session.kcal}kcal
                       </span>
                     )}
                   </div>
@@ -106,32 +86,15 @@ export function WorkoutListStep({
                   )}
 
                   {/* 세부현황 (확장 시) */}
-                  {isExpanded && (
-                    <div className="mt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
-                      <Separator />
-                      {uniqueExerciseIds.map((exId) => {
-                        const name = getExerciseName(exId)
-                        const sets = session.sets.filter((s) => s.exerciseId === exId)
-                        return (
-                          <div key={exId}>
-                            <p className="text-xs font-semibold mb-1.5">{name}</p>
-                            <div className="grid grid-cols-3 text-[11px] font-medium text-muted-foreground mb-1">
-                              <span>세트</span>
-                              <span className="text-right">무게</span>
-                              <span className="text-right">횟수</span>
-                            </div>
-                            {sets.map((set) => (
-                              <div key={set.id} className="grid grid-cols-3 text-xs">
-                                <span>{set.setNumber}</span>
-                                <span className="text-right">
-                                  {set.weightKg > 0 ? `${set.weightKg}kg` : "-"}
-                                </span>
-                                <span className="text-right">{set.reps}회</span>
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      })}
+                  {isExpanded && session.muscle_groups.length > 0 && (
+                    <div className="mt-3 space-y-1" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex flex-wrap gap-1.5">
+                        {session.muscle_groups.map((mg) => (
+                          <Badge key={mg} variant="secondary" className="text-xs">
+                            {mg}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>

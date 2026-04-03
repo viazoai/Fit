@@ -8,8 +8,8 @@ import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
-import { mockExercises, mockUsers } from "@/mocks"
-import { BODY_PART_KO, WEEKDAY_LABELS } from "@/lib/constants"
+import { mockUsers } from "@/mocks"
+import { WEEKDAY_LABELS } from "@/lib/constants"
 import { getToday } from "@/lib/date-utils"
 
 function getDaysInMonth(year: number, month: number): number {
@@ -26,9 +26,9 @@ function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${m}-${d}`
 }
 
-function calcStreak(userId: string, today: string, allWorkouts: { userId: string; date: string }[]): number {
+function calcStreak(userId: number, today: string, allWorkouts: { user_id: number; date: string }[]): number {
   const dates = allWorkouts
-    .filter((w) => w.userId === userId)
+    .filter((w) => w.user_id === userId)
     .map((w) => w.date)
     .sort((a, b) => b.localeCompare(a))
 
@@ -58,7 +58,7 @@ function calcStreak(userId: string, today: string, allWorkouts: { userId: string
 
 export default function CalendarPage() {
   const { currentUser } = useCurrentUser()
-  const { workouts } = useWorkouts()
+  const { summaries } = useWorkouts()
 
   const today = getToday()
   const todayDate = new Date(today)
@@ -67,7 +67,7 @@ export default function CalendarPage() {
 
   const [selectedDate, setSelectedDate] = useState<string>(today)
 
-  const streak = calcStreak(currentUser.id, today, workouts)
+  const streak = calcStreak(currentUser.id, today, summaries)
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDayOfWeek = getFirstDayOfMonth(viewYear, viewMonth) // 0=일
@@ -102,9 +102,9 @@ export default function CalendarPage() {
     }
   }
 
-  // 선택한 날짜의 운동 (user-1, user-2 모두)
+  // 선택한 날짜의 운동 (user_id 1, 2 모두)
   const selectedWorkouts = selectedDate
-    ? workouts.filter((w) => w.date === selectedDate)
+    ? summaries.filter((w) => w.date === selectedDate)
     : []
 
   return (
@@ -173,11 +173,11 @@ export default function CalendarPage() {
               const isSelected = dateStr === selectedDate
 
               // 각 사용자 운동 여부
-              const user1Worked = workouts.some(
-                (w) => w.userId === "user-1" && w.date === dateStr
+              const user1Worked = summaries.some(
+                (w) => w.user_id === 1 && w.date === dateStr
               )
-              const user2Worked = workouts.some(
-                (w) => w.userId === "user-2" && w.date === dateStr
+              const user2Worked = summaries.some(
+                (w) => w.user_id === 2 && w.date === dateStr
               )
 
               return (
@@ -222,13 +222,13 @@ export default function CalendarPage() {
             <div className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-primary" />
               <span className="text-xs text-muted-foreground">
-                {mockUsers.find((u) => u.id === "user-1")?.nickname}
+                {mockUsers.find((u) => u.id === 1)?.name}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-chart-2" />
               <span className="text-xs text-muted-foreground">
-                {mockUsers.find((u) => u.id === "user-2")?.nickname}
+                {mockUsers.find((u) => u.id === 2)?.name}
               </span>
             </div>
           </div>
@@ -256,86 +256,48 @@ export default function CalendarPage() {
           <Card>
             <CardContent className="pt-4 space-y-4">
               {selectedWorkouts.map((workout, idx) => {
-                const user = mockUsers.find((u) => u.id === workout.userId)
-                const exerciseIds = [
-                  ...new Set(workout.sets.map((s) => s.exerciseId)),
-                ]
-                const exercises = exerciseIds
-                  .map((id) => mockExercises.find((e) => e.id === id))
-                  .filter(Boolean)
+                const user = mockUsers.find((u) => u.id === workout.user_id)
 
                 return (
                   <div key={workout.id}>
                     {idx > 0 && <Separator className="mb-4" />}
                     <div className="flex items-start gap-3">
-                      <Avatar name={user?.nickname ?? "?"} size="sm" />
+                      <Avatar name={user?.name ?? "?"} size="sm" />
                       <div className="flex-1 min-w-0 space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-semibold">
-                            {user?.nickname ?? "알 수 없음"}
+                            {user?.name ?? "알 수 없음"}
                           </span>
                           <div className="flex items-center gap-2 shrink-0">
-                            {workout.caloriesBurned && (
+                            {workout.kcal && (
                               <span className="text-xs text-muted-foreground">
-                                {workout.caloriesBurned} kcal
+                                {workout.kcal} kcal
                               </span>
                             )}
-                            {workout.overallRpe && (
-                              <Badge variant="outline" className="text-xs h-4">
-                                RPE {workout.overallRpe}
-                              </Badge>
-                            )}
+                            <Badge variant="outline" className="text-xs h-4">
+                              {workout.exercise_count}종목
+                            </Badge>
                           </div>
                         </div>
 
-                        {/* 세트 요약 */}
-                        <div className="flex flex-wrap gap-1.5">
-                          {exercises.map(
-                            (ex) =>
-                              ex && (
-                                <Badge
-                                  key={ex.id}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {BODY_PART_KO[ex.bodyPart] ?? ex.bodyPart} ·{" "}
-                                  {ex.nameKo}
-                                </Badge>
-                              )
-                          )}
-                        </div>
-
-                        {/* 세트 상세 */}
-                        <div className="space-y-1">
-                          {exercises.map(
-                            (ex) =>
-                              ex && (
-                                <div
-                                  key={ex.id}
-                                  className="flex items-center gap-2 text-xs text-muted-foreground"
-                                >
-                                  <span className="font-medium text-foreground w-24 truncate">
-                                    {ex.nameKo}
-                                  </span>
-                                  <span>
-                                    {workout.sets
-                                      .filter((s) => s.exerciseId === ex.id)
-                                      .map(
-                                        (s) =>
-                                          s.weightKg > 0
-                                            ? `${s.weightKg}kg×${s.reps}`
-                                            : `×${s.reps}`
-                                      )
-                                      .join(", ")}
-                                  </span>
-                                </div>
-                              )
-                          )}
-                        </div>
+                        {/* 근육군 배지 */}
+                        {workout.muscle_groups.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {workout.muscle_groups.map((mg) => (
+                              <Badge
+                                key={mg}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {mg}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
 
                         {workout.memo && (
                           <p className="text-xs text-muted-foreground">
-                            💬 {workout.memo}
+                            {workout.memo}
                           </p>
                         )}
                       </div>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useExercises } from "@/context/exercise-context"
-import { MUSCLE_GROUPS, DIFFICULTY_KO, DIFFICULTY_VARIANT } from "@/lib/constants"
+import { MUSCLE_GROUPS, DIFFICULTY_KO } from "@/lib/constants"
 import type { Exercise } from "@/types"
 
 type FilterChipProps = {

@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
-import { useExercises } from "@/context/exercise-context"
 import { getToday, getDaysAgo, formatDateKo } from "@/lib/date-utils"
 import { WeeklyProgressCard } from "@/components/workout/WeeklyProgressCard"
 
@@ -15,7 +14,6 @@ const BG_STORAGE_KEY = "fit-home-bg"
 export default function HomePage() {
   const { currentUser } = useCurrentUser()
   const { summaries } = useWorkouts()
-  const { getName } = useExercises()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleBgChange(e: React.ChangeEvent<HTMLInputElement>) {
