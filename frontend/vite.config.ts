@@ -47,7 +47,7 @@ export default defineConfig({
   server: {
     allowedHosts: ["fit.zoai.uk"],
     proxy: {
-      "/api": "http://localhost:8000",
+      "/api": "http://localhost:3212",
     },
   },
 })
