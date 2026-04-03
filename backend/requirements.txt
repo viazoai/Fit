@@ -1,0 +1,18 @@
+# FastAPI
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# DB
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.9
+alembic==1.14.1
+
+# 인증
+pyjwt==2.10.1
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+
+# 유틸
+python-dotenv==1.0.1
+httpx==0.27.2
+pydantic-settings==2.7.1

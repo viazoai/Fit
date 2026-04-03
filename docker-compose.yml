@@ -8,6 +8,44 @@ services:
       - TZ=Asia/Seoul
     restart: unless-stopped
 
+  db:
+    image: postgres:16-alpine
+    container_name: fit-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=fit
+      - POSTGRES_PASSWORD=fit
+      - POSTGRES_DB=fit
+      - TZ=Asia/Seoul
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: fit-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://fit:fit@db:5432/fit
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - TZ=Asia/Seoul
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:latest
+    container_name: fit-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Asia/Seoul
+    restart: unless-stopped
+    depends_on:
+      - db
+
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: fit-tunnel
@@ -17,3 +55,6 @@ services:
     restart: unless-stopped
     depends_on:
       - frontend
+
+volumes:
+  pgdata:

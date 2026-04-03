@@ -35,8 +35,8 @@
 ```
 Phase 0  프로젝트 부트스트랩         ✅ 완료
 Phase 1  프론트엔드 코어 UI          ✅ 완료
-Phase 1.5  UI 보완 + 노션 데이터 연동  ✅ 1.5-1, 1.5-2 완료 / 1.5-3 미착수 ← 지금 여기
-Phase 2  백엔드 API + DB
+Phase 1.5  UI 보완 + 노션 데이터 연동  ✅ 완료
+Phase 2  백엔드 API + DB              ✅ 완료 ← 지금 여기
 Phase 3  프론트-백 연동
 Phase 4  AI 에이전트 통합
 Phase 5  Duo-Sync (부부 공유)
@@ -320,9 +320,11 @@ backend/
 
 ### 2-2. 데이터베이스
 
-- [ ] PostgreSQL Docker 컨테이너 설정
-- [ ] Alembic 마이그레이션 초기화
-- [ ] 테이블 생성 (아래 [데이터 모델](#10-데이터-모델-설계) 참조)
+- [x] PostgreSQL Docker 컨테이너 설정 (docker-compose.yml + Adminer)
+- [x] Alembic 마이그레이션 초기화
+- [x] 테이블 생성: users, exercises, workout_sessions, exercise_logs, exercise_sets, body_compositions
+- [x] 노션 raw 데이터 → 새 스키마 마이그레이션 완료 (249세션, 961로그, 2599세트)
+- [x] 스키마 상세: `docs/SCHEMA.md` 참조
 
 ### 2-3. API 엔드포인트
 
@@ -341,9 +343,9 @@ backend/
 
 ### 2-4. 인증
 
-- [ ] 부부 2인 전용이므로 간단한 PIN 또는 패스워드 기반 인증
-- [ ] JWT 토큰 발급/검증
-- [ ] 사용자 식별 (owner 구분)
+- [x] 부부 2인 전용 PIN 기반 인증 (최대 2명 등록)
+- [x] JWT 토큰 발급/검증 (PyJWT + passlib bcrypt)
+- [x] 사용자 식별 (`get_current_user` 의존성)
 
 ---
 
