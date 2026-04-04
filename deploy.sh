@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "=== 1. 환경변수 확인 ==="
-if [ -z "$CLOUDFLARE_TUNNEL_TOKEN" ] && ! grep -q CLOUDFLARE_TUNNEL_TOKEN .env 2>/dev/null; then
-  echo "ERROR: CLOUDFLARE_TUNNEL_TOKEN이 설정되지 않았습니다"
-  exit 1
-fi
-
 echo "=== 2. 이미지 빌드 (서비스 중단 없이) ==="
 docker compose build --no-cache
 
