@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Dumbbell, Flame } from "lucide-react"
-import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { getToday } from "@/lib/date-utils"
+import ProfilePopover from "@/components/layout/ProfilePopover"
 
 function calcStreakFromSummaries(
   userId: number,
@@ -115,9 +115,7 @@ export default function Header({ transparent = false }: HeaderProps) {
         </div>
 
         {/* 사용자 아바타 */}
-        <div className="rounded-full">
-          <Avatar name={currentUser.name} size="sm" />
-        </div>
+        <ProfilePopover />
       </div>
     </header>
   )

@@ -40,8 +40,9 @@ async function request<T>(
     if (res.status === 401) {
       clearToken()
     }
-    const body = await res.text().catch(() => "")
-    throw new Error(`API ${res.status}: ${body}`)
+    const body = await res.json().catch(() => ({ detail: "" }))
+    const msg = body?.detail || `API ${res.status}`
+    throw new Error(msg)
   }
 
   if (res.status === 204) return undefined as T
@@ -50,24 +51,31 @@ async function request<T>(
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+import type { UserRead } from "@/types"
+
 interface LoginResponse {
   access_token: string
   token_type: string
-  user: { id: number; name: string; created_at: string }
+  user: UserRead
 }
 
-export async function login(name: string, pin: string): Promise<LoginResponse> {
+export async function login(loginId: string, password: string): Promise<LoginResponse> {
   const data = await request<LoginResponse>("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ name, pin }),
+    body: JSON.stringify({ login_id: loginId, password }),
   })
   setToken(data.access_token)
   return data
 }
 
-// ─── Users ───────────────────────────────────────────────────────────────────
+export async function register(name: string, loginId: string, password: string): Promise<void> {
+  await request("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ name, login_id: loginId, password }),
+  })
+}
 
-import type { UserRead } from "@/types"
+// ─── Users ───────────────────────────────────────────────────────────────────
 
 export async function getMe(): Promise<UserRead> {
   return request<UserRead>("/api/users/me")
@@ -78,6 +86,27 @@ export async function updateMe(body: { name?: string; theme?: string }): Promise
     method: "PUT",
     body: JSON.stringify(body),
   })
+}
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+
+interface PendingUser {
+  id: number
+  name: string
+  login_id: string
+  created_at: string
+}
+
+export async function getPendingUsers(): Promise<PendingUser[]> {
+  return request<PendingUser[]>("/api/auth/pending-users")
+}
+
+export async function approveUser(userId: number): Promise<void> {
+  await request(`/api/auth/users/${userId}/approve`, { method: "POST" })
+}
+
+export async function rejectUser(userId: number): Promise<void> {
+  await request(`/api/auth/users/${userId}`, { method: "DELETE" })
 }
 
 // ─── Exercises ───────────────────────────────────────────────────────────────

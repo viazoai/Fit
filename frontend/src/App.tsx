@@ -19,6 +19,8 @@ import ReportPage from "@/pages/report"
 import MorePage from "@/pages/more"
 import PartnerPage from "@/pages/partner"
 import InbodyPage from "@/pages/inbody"
+import LoginPage from "@/pages/login"
+import RegisterPage from "@/pages/register"
 
 function AppContent() {
   const { currentUserId } = useCurrentUser()
@@ -48,7 +50,7 @@ function AppContent() {
 }
 
 function AuthGate() {
-  const { ready } = useAuth()
+  const { ready, isAuthenticated } = useAuth()
 
   if (!ready) {
     return (
@@ -56,6 +58,10 @@ function AuthGate() {
         <p className="text-muted-foreground text-sm">로딩 중...</p>
       </div>
     )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
   }
 
   return (
@@ -78,7 +84,29 @@ function AuthGate() {
 export default function App() {
   return (
     <AuthProvider>
-      <AuthGate />
+      <Routes>
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route path="/*" element={<AuthGate />} />
+      </Routes>
     </AuthProvider>
   )
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { ready, isAuthenticated } = useAuth()
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground text-sm">로딩 중...</p>
+      </div>
+    )
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />
+  }
+
+  return <>{children}</>
 }

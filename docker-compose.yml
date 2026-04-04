@@ -30,6 +30,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://fit:fit@db:5432/fit
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
       - TZ=Asia/Seoul
     depends_on:
       - db

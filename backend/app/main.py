@@ -1,9 +1,25 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.db import SessionLocal
 from app.routers import auth, exercises, workouts, calendar, users
+from app.services.auth import seed_admin
 
-app = FastAPI(title="Fit API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup: admin 시딩
+    db = SessionLocal()
+    try:
+        seed_admin(db)
+    finally:
+        db.close()
+    yield
+
+
+app = FastAPI(title="Fit API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7일
 
+    # Admin 초기 시딩
+    ADMIN_PASSWORD: str = ""
+
     # Notion (마이그레이션용)
     NOTION_TOKEN: str = ""
     NOTION_WORKOUT_DB_ID: str = ""

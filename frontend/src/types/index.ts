@@ -99,6 +99,9 @@ export type ThemeMode = "system" | "light" | "dark"
 export interface UserRead {
   id: number
   name: string
+  login_id: string
+  is_admin: boolean
+  is_approved: boolean
   theme: ThemeMode
   created_at: string
 }
