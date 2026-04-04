@@ -31,7 +31,7 @@ const AVATAR_COLORS = [
 ]
 
 const sizeClasses = {
-  sm: "size-7 text-xs",
+  sm: "size-8 text-sm",
   md: "size-9 text-sm",
   lg: "size-11 text-base",
 }

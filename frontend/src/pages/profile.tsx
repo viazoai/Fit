@@ -94,7 +94,7 @@ export default function ProfilePage() {
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-[30px] font-bold">프로필 설정</h1>
+          <h1 className="text-2xl font-bold">프로필 설정</h1>
         </div>
         <div className="flex items-center gap-4">
           <Avatar name={currentUser.name} size="lg" />

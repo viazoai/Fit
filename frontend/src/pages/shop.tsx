@@ -248,14 +248,14 @@ export default function ShopPage() {
   return (
     <div className="px-4 pt-4 pb-4 space-y-4">
       {/* 타이틀 */}
-      <h1 className="text-[30px] font-bold">Shop</h1>
+      <h1 className="text-2xl font-bold">Shop</h1>
 
       {/* 포인트 배너 */}
       <div className="rounded-2xl bg-card text-foreground px-5 pt-5 pb-4 flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-medium text-muted-foreground">보유 포인트</p>
           <div className="flex items-end gap-1.5">
-            <span className="text-[30px] font-bold tabular-nums leading-none">
+            <span className="text-2xl font-bold tabular-nums leading-none">
               {balance.toLocaleString()}
             </span>
             <span className="text-lg font-semibold text-muted-foreground pb-0.5">P</span>

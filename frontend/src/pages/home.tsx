@@ -60,7 +60,7 @@ export default function HomePage() {
       <div className="pt-[160px] flex items-end justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{formatDateKo(today)}</p>
-          <h1 className="text-[30px] font-bold">
+          <h1 className="text-2xl font-bold">
             안녕하세요, {currentUser.name}님 👋
           </h1>
         </div>

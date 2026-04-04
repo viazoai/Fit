@@ -76,8 +76,8 @@ export default function Header({ transparent = false }: HeaderProps) {
     >
       {/* 로고 */}
       <Link to="/" className="flex items-center gap-2">
-        <Dumbbell className="size-5 text-primary" />
-        <span className="text-base font-bold tracking-tight">Fit</span>
+        <Dumbbell className="size-6 text-primary" />
+        <span className="text-lg font-bold tracking-tight">Fit</span>
       </Link>
 
       {/* 운동 중 타이머 */}
@@ -100,7 +100,7 @@ export default function Header({ transparent = false }: HeaderProps) {
         >
           <Flame
             className={cn(
-              "size-4 transition-colors",
+              "size-5 transition-colors",
               streak > 0 ? "text-accent-heat" : "text-muted-foreground"
             )}
           />

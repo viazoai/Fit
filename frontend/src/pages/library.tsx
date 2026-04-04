@@ -48,7 +48,7 @@ export default function LibraryPage() {
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-[30px] font-bold">운동 라이브러리</h1>
+          <h1 className="text-2xl font-bold">운동 라이브러리</h1>
         </div>
 
         {/* 검색 Input */}

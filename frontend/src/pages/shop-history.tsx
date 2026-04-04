@@ -35,7 +35,7 @@ export default function ShopHistoryPage() {
         >
           <ChevronLeft className="size-5" />
         </button>
-        <h1 className="text-[30px] font-bold">포인트 내역</h1>
+        <h1 className="text-2xl font-bold">포인트 내역</h1>
       </div>
 
       {/* 잔액 카드 */}

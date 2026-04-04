@@ -56,7 +56,7 @@ export default function MorePage() {
   return (
     <div className="flex flex-col">
       <div className="px-4 pt-4 pb-4">
-        <h1 className="text-[30px] font-bold">More</h1>
+        <h1 className="text-2xl font-bold">More</h1>
       </div>
 
       {/* 화면 설정 */}
