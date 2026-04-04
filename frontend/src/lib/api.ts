@@ -130,6 +130,43 @@ export async function getExercise(id: number): Promise<Exercise> {
   return request<Exercise>(`/api/exercises/${id}`)
 }
 
+export async function createExercise(body: {
+  name: string
+  type: string
+  muscle_group?: string | null
+  difficulty?: string | null
+  equipment?: string[] | null
+  youtube_url?: string | null
+  met_value?: number | null
+}): Promise<Exercise> {
+  return request<Exercise>("/api/exercises", {
+    method: "POST",
+    body: JSON.stringify(body),
+  })
+}
+
+export async function updateExercise(
+  id: number,
+  body: {
+    name?: string
+    type?: string
+    muscle_group?: string | null
+    difficulty?: string | null
+    equipment?: string[] | null
+    youtube_url?: string | null
+    met_value?: number | null
+  },
+): Promise<Exercise> {
+  return request<Exercise>(`/api/exercises/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  })
+}
+
+export async function deleteExercise(id: number): Promise<void> {
+  return request<void>(`/api/exercises/${id}`, { method: "DELETE" })
+}
+
 export async function getLastExerciseLog(exerciseId: number): Promise<{
   sets: { set_index: number; weight_kg: number | null; reps: number | null }[]
 }> {

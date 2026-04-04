@@ -31,21 +31,22 @@ export const DIFFICULTY_VARIANT: Record<string, "default" | "secondary" | "outli
 export const EQUIPMENT_LIST = [
   "바벨",
   "덤벨",
-  "케이블",
+  "벤치",
+  "케이블머신",
+  "스미스머신",
   "체스트프레스머신",
   "랫풀다운머신",
   "레그프레스머신",
   "레그컬머신",
   "레그익스텐션머신",
   "펙덱머신",
-  "스텝밀",
-  "자전거",
+  "로잉머신",
   "철봉",
   "딥스바",
   "저항밴드",
   "케틀벨",
   "트레드밀",
-  "어시스티드풀업머신",
+  "풀업머신",
 ] as const
 
 export type EquipmentName = (typeof EQUIPMENT_LIST)[number]

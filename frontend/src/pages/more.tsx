@@ -17,8 +17,7 @@ const MENU_ITEMS = [
     to: "/library",
     icon: BookOpen,
     label: "운동 라이브러리",
-    description: "운동 종목 검색 및 상세 정보",
-    badge: "준비 중",
+    description: "운동 종목 검색, 추가, 편집",
   },
   {
     to: "/profile",

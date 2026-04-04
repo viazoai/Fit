@@ -17,6 +17,16 @@ class ExerciseCreate(ExerciseBase):
     pass
 
 
+class ExerciseUpdate(BaseModel):
+    name: str | None = None
+    type: str | None = None
+    muscle_group: str | None = None
+    difficulty: str | None = None
+    equipment: list[str] | None = None
+    youtube_url: str | None = None
+    met_value: Decimal | None = None
+
+
 class ExerciseRead(ExerciseBase):
     id: int
     is_active: bool

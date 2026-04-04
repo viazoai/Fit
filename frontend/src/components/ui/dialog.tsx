@@ -107,8 +107,8 @@ function DialogFooter({
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
-          Close
+        <DialogPrimitive.Close render={<Button variant="secondary" />}>
+          닫기
         </DialogPrimitive.Close>
       )}
     </div>
