@@ -155,7 +155,7 @@ export function CompleteStep({
         <Button className="w-full" onClick={handleSaveAndGo} disabled={saving}>
           {saving ? "저장 중..." : saved ? "홈으로 가기" : "저장하고 홈으로"}
         </Button>
-        <Button variant="outline" className="w-full" onClick={onRestart}>
+        <Button variant="secondary" className="w-full" onClick={onRestart}>
           다시 기록하기
         </Button>
       </div>

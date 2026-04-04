@@ -2,33 +2,14 @@ import { useState } from "react"
 import { Search, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
 import { useExercises } from "@/context/exercise-context"
-import { MUSCLE_GROUPS, DIFFICULTY_KO } from "@/lib/constants"
+import { EQUIPMENT_LIST } from "@/lib/constants"
+
+
+const EQUIPMENT_SET = new Set<string>(EQUIPMENT_LIST)
+import { ExerciseFilterBar } from "./ExerciseFilterBar"
+import { ExerciseListItem } from "./ExerciseListItem"
 import type { Exercise } from "@/types"
-
-type FilterChipProps = {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}
-
-function FilterChip({ active, onClick, children }: FilterChipProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "shrink-0 h-7 rounded-full px-3 text-xs font-medium transition-colors",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "bg-card text-foreground"
-      )}
-    >
-      {children}
-    </button>
-  )
-}
 
 export function SelectExercisesStep({
   onConfirm,
@@ -41,18 +22,15 @@ export function SelectExercisesStep({
 }) {
   const { exercises: allExercises } = useExercises()
   const [search, setSearch] = useState("")
-  const [muscleFilter, setMuscleFilter] = useState<string>("all")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
-  const [equipmentFilter, setEquipmentFilter] = useState<string>("all")
+  const [muscleFilter, setMuscleFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("all")
+  const [equipmentFilter, setEquipmentFilter] = useState("all")
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
   const isAddMode = !!onCancel
 
-  // 운동 타입 / 장비 목록을 데이터에서 동적 추출
   const exerciseTypes = [...new Set(allExercises.map((e) => e.type))].sort()
-  const equipmentTypes = [...new Set(
-    allExercises.flatMap((e) => e.equipment ?? [])
-  )].sort()
+  const equipmentTypes = [...new Set(allExercises.flatMap((e) => (e.equipment ?? []).filter((eq) => EQUIPMENT_SET.has(eq))))].sort()
 
   const filtered = allExercises.filter((e) => {
     if (excludeIds?.has(e.id)) return false
@@ -66,7 +44,6 @@ export function SelectExercisesStep({
     return true
   })
 
-  // 운동 구분(타입)별 그룹핑
   const TYPE_ORDER = ["기구", "맨몸", "유산소", "스트레칭"]
   const grouped = TYPE_ORDER.map((t) => ({
     group: t,
@@ -102,62 +79,23 @@ export function SelectExercisesStep({
           placeholder="운동 이름 검색..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-8"
+          className="pl-8 border-border"
         />
       </div>
 
-      {/* 운동 구분 필터 */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-        <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">구분</span>
-        <FilterChip active={typeFilter === "all"} onClick={() => setTypeFilter("all")}>
-          전체
-        </FilterChip>
-        {exerciseTypes.map((t) => (
-          <FilterChip
-            key={t}
-            active={typeFilter === t}
-            onClick={() => setTypeFilter(t)}
-          >
-            {t}
-          </FilterChip>
-        ))}
-      </div>
+      <ExerciseFilterBar
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        muscleFilter={muscleFilter}
+        setMuscleFilter={setMuscleFilter}
+        equipmentFilter={equipmentFilter}
+        setEquipmentFilter={setEquipmentFilter}
+        exerciseTypes={exerciseTypes}
+        equipmentTypes={equipmentTypes}
+      />
 
-      {/* 근육군 필터 */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-        <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">부위</span>
-        <FilterChip active={muscleFilter === "all"} onClick={() => setMuscleFilter("all")}>
-          전체
-        </FilterChip>
-        {MUSCLE_GROUPS.map((mg) => (
-          <FilterChip
-            key={mg}
-            active={muscleFilter === mg}
-            onClick={() => setMuscleFilter(mg)}
-          >
-            {mg}
-          </FilterChip>
-        ))}
-      </div>
-
-      {/* 기구 필터 */}
-      {equipmentTypes.filter((eq) => eq !== "없음").length > 0 && (
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-          <span className="shrink-0 text-xs font-semibold text-muted-foreground mr-1">기구</span>
-          <FilterChip active={equipmentFilter === "all"} onClick={() => setEquipmentFilter("all")}>
-            전체
-          </FilterChip>
-          {equipmentTypes.filter((eq) => eq !== "없음").map((eq) => (
-            <FilterChip
-              key={eq}
-              active={equipmentFilter === eq}
-              onClick={() => setEquipmentFilter(eq)}
-            >
-              {eq}
-            </FilterChip>
-          ))}
-        </div>
-      )}
+      {/* 개수 */}
+      <p className="text-xs text-muted-foreground">{filtered.length}개의 운동</p>
 
       {/* 운동 목록 */}
       <div className="flex flex-col gap-4">
@@ -166,40 +104,17 @@ export function SelectExercisesStep({
         ) : (
           grouped.map(({ group, exercises }) => (
             <div key={group} className="flex flex-col gap-2">
-              <p className="text-xs font-semibold text-muted-foreground px-1">
-                {group}
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground px-1">{group}</p>
               {exercises.map((exercise) => {
                 const isSelected = selected.has(exercise.id)
                 return (
-                  <button
+                  <ExerciseListItem
                     key={exercise.id}
+                    exercise={exercise}
                     onClick={() => toggleExercise(exercise.id)}
-                    className={cn(
-                      "flex items-center justify-between rounded-xl p-3 text-left transition-colors",
-                      isSelected
-                        ? "border border-primary bg-primary/5"
-                        : "bg-card"
-                    )}
-                  >
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-sm font-medium">{exercise.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {[
-                          exercise.muscle_group ?? exercise.type,
-                          exercise.equipment?.join(", "),
-                        ].filter(Boolean).join(" · ")}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 ml-2">
-                      {exercise.difficulty && (
-                        <Badge variant="secondary">
-                          {DIFFICULTY_KO[exercise.difficulty] ?? exercise.difficulty}
-                        </Badge>
-                      )}
-                      {isSelected && <CheckCircle2 className="size-4 text-primary" />}
-                    </div>
-                  </button>
+                    highlighted={isSelected}
+                    rightSlot={isSelected ? <CheckCircle2 className="size-4 text-primary" /> : undefined}
+                  />
                 )
               })}
             </div>
@@ -210,14 +125,16 @@ export function SelectExercisesStep({
       {/* 하단 고정 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
         {isAddMode && (
-          <Button variant="outline" className="w-24 h-10" onClick={onCancel}>
+          <Button variant="secondary" className="w-24" onClick={onCancel}>
             취소
           </Button>
         )}
-        <Button className="flex-1 h-10" disabled={selected.size === 0} onClick={handleConfirm}>
+        <Button className="flex-1" disabled={selected.size === 0} onClick={handleConfirm}>
           {selected.size > 0
             ? `${selected.size}개 선택 → ${isAddMode ? "운동 추가" : "운동 시작"}`
-            : isAddMode ? "운동을 추가하세요" : "운동을 선택하세요"}
+            : isAddMode
+              ? "운동을 추가하세요"
+              : "운동을 선택하세요"}
         </Button>
       </div>
     </div>

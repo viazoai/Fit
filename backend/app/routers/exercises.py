@@ -5,7 +5,7 @@ from app.db import get_db
 from app.models.exercise import Exercise
 from app.models.workout import ExerciseLog, ExerciseSet, WorkoutSession
 from app.models.user import User
-from app.schemas.exercise import ExerciseCreate, ExerciseRead
+from app.schemas.exercise import ExerciseCreate, ExerciseRead, ExerciseUpdate
 from app.services.auth import get_current_user
 
 router = APIRouter()
@@ -68,3 +68,33 @@ def create_exercise(body: ExerciseCreate, db: Session = Depends(get_db), _=Depen
     db.commit()
     db.refresh(exercise)
     return exercise
+
+
+@router.put("/{exercise_id}", response_model=ExerciseRead)
+def update_exercise(
+    exercise_id: int,
+    body: ExerciseUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    exercise = db.get(Exercise, exercise_id)
+    if not exercise:
+        raise HTTPException(status_code=404, detail="운동 종목을 찾을 수 없음")
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(exercise, field, value)
+    db.commit()
+    db.refresh(exercise)
+    return exercise
+
+
+@router.delete("/{exercise_id}", status_code=204)
+def delete_exercise(
+    exercise_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    exercise = db.get(Exercise, exercise_id)
+    if not exercise:
+        raise HTTPException(status_code=404, detail="운동 종목을 찾을 수 없음")
+    exercise.is_active = False
+    db.commit()

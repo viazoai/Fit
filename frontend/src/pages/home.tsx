@@ -64,21 +64,25 @@ export default function HomePage() {
             안녕하세요, {currentUser.name}님 👋
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="mb-0.5 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          aria-label="홈 배경 사진 변경"
-        >
-          <Pencil className="size-3.5" />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleBgChange}
-        />
+        {currentUser.is_admin && (
+          <>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mb-0.5 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              aria-label="홈 배경 사진 변경"
+            >
+              <Pencil className="size-3.5" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleBgChange}
+            />
+          </>
+        )}
       </div>
 
       {/* 오늘의 운동 요약 카드 */}
