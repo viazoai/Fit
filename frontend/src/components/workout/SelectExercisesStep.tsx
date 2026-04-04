@@ -179,7 +179,7 @@ export function SelectExercisesStep({
                       "flex items-center justify-between rounded-xl p-3 text-left transition-colors",
                       isSelected
                         ? "border border-primary bg-primary/5"
-                        : ""
+                        : "bg-card"
                     )}
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">
