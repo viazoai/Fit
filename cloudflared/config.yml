@@ -1,0 +1,10 @@
+tunnel: c1c00e3c-6895-4f6c-ac04-c955c1a2a94e
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: fit.zoai.uk
+    path: /api/.*
+    service: http://fit-api:8000
+  - hostname: fit.zoai.uk
+    service: http://fit-web:80
+  - service: http_status:404

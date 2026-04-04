@@ -4,3 +4,4 @@
 __pycache__/
 *.pyc
 backend/venv/
+cloudflared/credentials.json

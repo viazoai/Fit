@@ -49,12 +49,14 @@ services:
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: fit-tunnel
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --config /etc/cloudflared/config.yml --no-autoupdate run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
     restart: unless-stopped
     depends_on:
       - frontend
+      - backend
 
 volumes:
   pgdata:
