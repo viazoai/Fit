@@ -260,7 +260,7 @@ export function LoggingStep({
       {/* 현재 운동 카드 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{currentExercise.name}</CardTitle>
+          <CardTitle className="text-base font-bold">{currentExercise.name}</CardTitle>
           <p className="text-xs text-muted-foreground">
             {currentExercise.muscle_group ?? currentExercise.type}
           </p>
@@ -387,11 +387,11 @@ export function LoggingStep({
               <RpeSlider value={rpe} onChange={setRpe} />
 
               <div className="flex gap-2">
-                <Button className="flex-1" onClick={addSet} disabled={!weightKg || !reps}>
+                <Button className="flex-1 py-2.5 h-auto" onClick={addSet} disabled={!weightKg || !reps}>
                   세트 기록
                 </Button>
                 {currentActive.sets.length > 0 && (
-                  <Button variant="destructive" size="icon" onClick={removeLastSet}>
+                  <Button variant="destructive" size="icon" className="py-2.5 h-auto" onClick={removeLastSet}>
                     <Trash2 />
                   </Button>
                 )}
@@ -445,8 +445,8 @@ export function LoggingStep({
       {currentExercises.length > 1 && (
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            className="flex-1 border-0 bg-muted text-muted-foreground"
+            variant="ghost"
+            className="flex-1 bg-card hover:bg-card/80 dark:bg-card dark:hover:bg-card/80 text-foreground"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((i) => i - 1)}
           >
@@ -454,8 +454,8 @@ export function LoggingStep({
             이전
           </Button>
           <Button
-            variant="outline"
-            className="flex-1 border-0 bg-muted text-muted-foreground"
+            variant="ghost"
+            className="flex-1 bg-card hover:bg-card/80 dark:bg-card dark:hover:bg-card/80 text-foreground"
             disabled={currentIndex === currentExercises.length - 1}
             onClick={() => setCurrentIndex((i) => i + 1)}
           >
@@ -467,10 +467,10 @@ export function LoggingStep({
 
       {/* 운동 완료/취소 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
-        <Button variant="outline" className="w-24 h-10 border-0 bg-muted text-muted-foreground" onClick={onCancel}>
+        <Button variant="ghost" className="w-24 py-2.5 h-auto bg-card hover:bg-card/80 dark:bg-card dark:hover:bg-card/80 text-foreground" onClick={onCancel}>
           취소
         </Button>
-        <Button className="flex-1 h-10" onClick={handleComplete}>
+        <Button className="flex-1 py-2.5 h-auto" onClick={handleComplete}>
           <CheckCircle2 />
           운동 완료
         </Button>

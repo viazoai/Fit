@@ -201,7 +201,7 @@ function ItemCard({
         </p>
         <Button
           size="sm"
-          className="w-full h-10 rounded-xl"
+          className="w-full py-2.5 h-auto rounded-xl"
           disabled={!canAfford}
           onClick={() => onBuy(item)}
         >
