@@ -6,7 +6,7 @@ import BottomNav from "./BottomNav"
 
 const BG_STORAGE_KEY = "fit-home-bg"
 const DEFAULT_BG_DARK = "/home-bg.jpg"
-const DEFAULT_BG_LIGHT = "/home-bg-light.JPG"
+const DEFAULT_BG_LIGHT = "/home-bg-light.jpg"
 
 interface AppShellProps {
   children: ReactNode

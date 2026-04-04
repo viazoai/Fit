@@ -63,10 +63,10 @@ function PurchaseDialog({
             </p>
           )}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={onClose}>
+            <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={onClose}>
               취소
             </Button>
-            <Button className="flex-1" disabled={!canAfford} onClick={onConfirm}>
+            <Button className="flex-1 h-10 rounded-xl" disabled={!canAfford} onClick={onConfirm}>
               구매하기
             </Button>
           </div>
@@ -140,10 +140,10 @@ function ItemEditDialog({
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
           <div className="flex gap-2 pt-1">
-            <Button variant="outline" className="flex-1" onClick={onClose}>
+            <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={onClose}>
               취소
             </Button>
-            <Button className="flex-1" onClick={handleSave}>
+            <Button className="flex-1 h-10 rounded-xl" onClick={handleSave}>
               저장
             </Button>
           </div>
@@ -201,7 +201,7 @@ function ItemCard({
         </p>
         <Button
           size="sm"
-          className="w-full"
+          className="w-full h-10 rounded-xl"
           disabled={!canAfford}
           onClick={() => onBuy(item)}
         >

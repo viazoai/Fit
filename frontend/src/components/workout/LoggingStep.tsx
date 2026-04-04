@@ -446,7 +446,7 @@ export function LoggingStep({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-0 bg-muted text-muted-foreground"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((i) => i - 1)}
           >
@@ -455,7 +455,7 @@ export function LoggingStep({
           </Button>
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-0 bg-muted text-muted-foreground"
             disabled={currentIndex === currentExercises.length - 1}
             onClick={() => setCurrentIndex((i) => i + 1)}
           >
@@ -467,7 +467,7 @@ export function LoggingStep({
 
       {/* 운동 완료/취소 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
-        <Button variant="outline" className="w-24 h-10" onClick={onCancel}>
+        <Button variant="outline" className="w-24 h-10 border-0 bg-muted text-muted-foreground" onClick={onCancel}>
           취소
         </Button>
         <Button className="flex-1 h-10" onClick={handleComplete}>

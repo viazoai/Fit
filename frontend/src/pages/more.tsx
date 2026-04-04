@@ -18,18 +18,21 @@ const MENU_ITEMS = [
     icon: BookOpen,
     label: "운동 라이브러리",
     description: "운동 종목 검색 및 상세 정보",
+    badge: "준비 중",
   },
   {
     to: "/profile",
     icon: UserCircle,
     label: "프로필 설정",
     description: "신체 정보, 운동 목표, 장비 관리",
+    badge: "준비 중",
   },
   {
     to: "/partner",
     icon: Users,
     label: "파트너 설정",
     description: "파트너 운동 공유 및 연결 관리",
+    badge: "준비 중",
   },
   {
     to: "/inbody",

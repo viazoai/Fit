@@ -63,10 +63,10 @@ function CouponCard({
 
         {coupon.status === "unused" && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" className="flex-1" onClick={onUse}>
+            <Button size="sm" className="flex-1 h-10 rounded-xl" onClick={onUse}>
               사용하기
             </Button>
-            <Button size="sm" variant="outline" className="flex-1" onClick={onRefund}>
+            <Button size="sm" variant="outline" className="flex-1 h-10 rounded-xl" onClick={onRefund}>
               환불 ({coupon.price.toLocaleString()}P)
             </Button>
           </div>
@@ -156,11 +156,11 @@ export default function ShopInventoryPage() {
                 사용할까요? 사용 후에는 취소할 수 없어요.
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setUsingCoupon(null)}>
+                <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setUsingCoupon(null)}>
                   취소
                 </Button>
                 <Button
-                  className="flex-1"
+                  className="flex-1 h-10 rounded-xl"
                   onClick={() => {
                     useItem(usingCoupon.id)
                     setUsingCoupon(null)
@@ -191,12 +191,12 @@ export default function ShopInventoryPage() {
                 가 반환돼요.
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setRefundingCoupon(null)}>
+                <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setRefundingCoupon(null)}>
                   취소
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                  className="flex-1 h-10 rounded-xl border-destructive text-destructive hover:bg-destructive/10"
                   onClick={() => {
                     refundItem(refundingCoupon.id)
                     setRefundingCoupon(null)
