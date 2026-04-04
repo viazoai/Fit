@@ -63,10 +63,10 @@ function PurchaseDialog({
             </p>
           )}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={onClose}>
+            <Button variant="secondary" className="flex-1" onClick={onClose}>
               취소
             </Button>
-            <Button className="flex-1 h-10 rounded-xl" disabled={!canAfford} onClick={onConfirm}>
+            <Button className="flex-1" disabled={!canAfford} onClick={onConfirm}>
               구매하기
             </Button>
           </div>
@@ -140,10 +140,10 @@ function ItemEditDialog({
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
           <div className="flex gap-2 pt-1">
-            <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={onClose}>
+            <Button variant="secondary" className="flex-1" onClick={onClose}>
               취소
             </Button>
-            <Button className="flex-1 h-10 rounded-xl" onClick={handleSave}>
+            <Button className="flex-1" onClick={handleSave}>
               저장
             </Button>
           </div>
@@ -200,8 +200,7 @@ function ItemCard({
           {item.price.toLocaleString()}P
         </p>
         <Button
-          size="sm"
-          className="w-full py-2.5 h-auto rounded-xl"
+          className="w-full"
           disabled={!canAfford}
           onClick={() => onBuy(item)}
         >
