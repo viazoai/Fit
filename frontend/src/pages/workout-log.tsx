@@ -8,7 +8,7 @@ import { SelectExercisesStep } from "@/components/workout/SelectExercisesStep"
 import { LoggingStep } from "@/components/workout/LoggingStep"
 import { CompleteStep } from "@/components/workout/CompleteStep"
 import type { ActiveExercise, Exercise } from "@/types"
-import { clearTimer } from "@/lib/timer-storage"
+import { clearTimer, resumeTimer } from "@/lib/timer-storage"
 
 type Step = "select-exercises" | "logging" | "add-exercises" | "complete"
 
@@ -29,6 +29,7 @@ export default function WorkoutLogPage() {
   )
   const [completedExercises, setCompletedExercises] = useState<ActiveExercise[]>([])
   const [completedElapsedSec, setCompletedElapsedSec] = useState(0)
+  const [loggingInitialIndex, setLoggingInitialIndex] = useState(0)
 
   function handleSelectExercises(exercises: Exercise[]) {
     clearTimer()
@@ -105,6 +106,7 @@ export default function WorkoutLogPage() {
   }
 
   function handleGoLog() {
+    clearTimer()
     setWorkoutActive(false)
     clearSession()
     setSelectedExercises([])
@@ -114,6 +116,7 @@ export default function WorkoutLogPage() {
   }
 
   function handleRestart() {
+    clearTimer()
     setWorkoutActive(false)
     clearSession()
     setStep("select-exercises")
@@ -122,9 +125,17 @@ export default function WorkoutLogPage() {
     setCompletedElapsedSec(0)
   }
 
+  function handleBackToLogging() {
+    resumeTimer()
+    setLoggingInitialIndex(0)
+    setStep("logging")
+  }
+
   function handleAddMoreExercises(newExercises: Exercise[]) {
+    const startIndex = selectedExercises.length
     const allExercises = [...selectedExercises, ...newExercises]
     setSelectedExercises(allExercises)
+    setLoggingInitialIndex(startIndex)
     if (session) {
       setSession({
         ...session,
@@ -161,9 +172,10 @@ export default function WorkoutLogPage() {
       <LoggingStep
         exercises={selectedExercises}
         initialActiveExercises={session?.activeExercises}
+        initialIndex={loggingInitialIndex}
         onComplete={handleCompleteLogging}
         onCancel={handleRestart}
-        onAddExercises={() => setStep("add-exercises")}
+        onAddExercises={() => { setLoggingInitialIndex(0); setStep("add-exercises") }}
         onActiveExercisesChange={handleActiveExercisesChange}
       />
     )
@@ -176,7 +188,7 @@ export default function WorkoutLogPage() {
         activeExercises={completedExercises}
         elapsedSec={completedElapsedSec}
         onGoHome={handleGoLog}
-        onRestart={handleRestart}
+        onRestart={handleBackToLogging}
         onSave={handleSaveWorkout}
       />
     )

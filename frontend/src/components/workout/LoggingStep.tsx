@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { RpeSlider } from "@/components/workout/rpe-slider"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 // import { formatSeconds } from "@/lib/date-utils"
 import {
   startTimer,
+  pauseTimer,
+  resumeTimer,
   getElapsedMs,
   isPaused as getIsPaused,
   hasActiveTimer,
@@ -23,6 +26,7 @@ export type { ActiveSet, ActiveExercise }
 export function LoggingStep({
   exercises: initialExercises,
   initialActiveExercises,
+  initialIndex = 0,
   onComplete,
   onCancel,
   onAddExercises,
@@ -31,6 +35,7 @@ export function LoggingStep({
 }: {
   exercises: Exercise[]
   initialActiveExercises?: ActiveExercise[]
+  initialIndex?: number
   onComplete: (activeExercises: ActiveExercise[], elapsedSec: number) => void
   onCancel: () => void
   onAddExercises: () => void
@@ -50,7 +55,12 @@ export function LoggingStep({
     setActiveExercises(updated)
     onActiveExercisesChange?.(updated)
   }
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(() => Math.min(initialIndex, Math.max(0, initialExercises.length - 1)))
+  const [removeConfirmIndex, setRemoveConfirmIndex] = useState<number | null>(null)
+
+  // 탭 스크롤 refs
+  const tabContainerRef = useRef<HTMLDivElement>(null)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   // 운동별 최근 수행 기록 캐시 (exerciseId → 세트 배열)
   const lastLogsRef = useRef<Map<number, LastSet[]>>(new Map())
@@ -92,6 +102,14 @@ export function LoggingStep({
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 탭 인덱스 변경 시 해당 탭으로 스크롤
+  useEffect(() => {
+    const tab = tabRefs.current[currentIndex]
+    if (tab) {
+      tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" })
+    }
+  }, [currentIndex])
 
   // 탭 전환 시 — 세트 값 자동입력 + 유산소/스트레칭 값 복원
   useEffect(() => {
@@ -196,14 +214,14 @@ export function LoggingStep({
     setCurrentIndex((prev) => Math.min(prev, currentExercises.length - 2))
   }
 
-  // 완료 시 타이머 정리
+  // 완료 시 타이머 일시정지 (돌아가기 시 재개, 저장 시 clearTimer)
   function handleComplete() {
     if (editMode) {
       onComplete(activeExercises, 0) // 부모(workout-edit)에서 duration 관리
       return
     }
     if (intervalRef.current) clearInterval(intervalRef.current)
-    clearTimer()
+    pauseTimer()
     onComplete(activeExercises, elapsedSec)
   }
 
@@ -211,49 +229,31 @@ export function LoggingStep({
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-24">
       {/* 운동 탭 선택 */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div ref={tabContainerRef} className="flex gap-2 overflow-x-auto pb-1">
         {currentExercises.map((exercise, i) => (
-          <div key={exercise.id} className="relative shrink-0">
-            <button
-              onClick={() => setCurrentIndex(i)}
-              className={[
-                "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-                currentExercises.length > 1 ? "pr-6" : "",
-                i === currentIndex
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30",
-              ].join(" ")}
-            >
-              {exercise.name}
-              {activeExercises[i].sets.length > 0 && (
-                <span className="ml-1 text-[10px] opacity-70">
-                  {activeExercises[i].sets.length}세트
-                </span>
-              )}
-              {activeExercises[i].sets.length === 0 && activeExercises[i].durationMin !== undefined && (
-                <span className="ml-1 text-[10px] opacity-70">
-                  {activeExercises[i].durationMin}분
-                </span>
-              )}
-            </button>
-            {currentExercises.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleRemoveExercise(i)
-                }}
-                className={[
-                  "absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-colors",
-                  i === currentIndex
-                    ? "text-primary-foreground/70 hover:text-primary-foreground"
-                    : "text-muted-foreground/50 hover:text-muted-foreground",
-                ].join(" ")}
-                aria-label={`${exercise.name} 삭제`}
-              >
-                <X className="size-3" />
-              </button>
+          <button
+            key={exercise.id}
+            ref={(el) => { tabRefs.current[i] = el }}
+            onClick={() => setCurrentIndex(i)}
+            className={[
+              "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+              i === currentIndex
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30",
+            ].join(" ")}
+          >
+            {exercise.name}
+            {activeExercises[i].sets.length > 0 && (
+              <span className="ml-1 text-[10px] opacity-70">
+                {activeExercises[i].sets.length}세트
+              </span>
             )}
-          </div>
+            {activeExercises[i].sets.length === 0 && activeExercises[i].durationMin !== undefined && (
+              <span className="ml-1 text-[10px] opacity-70">
+                {activeExercises[i].durationMin}분
+              </span>
+            )}
+          </button>
         ))}
 
         {/* 운동 추가 버튼 */}
@@ -269,10 +269,21 @@ export function LoggingStep({
       {/* 현재 운동 카드 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-bold">{currentExercise.name}</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            {currentExercise.muscle_group ?? currentExercise.type}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-base font-bold">{currentExercise.name}</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {currentExercise.muscle_group ?? currentExercise.type}
+              </p>
+            </div>
+            <button
+              onClick={() => setRemoveConfirmIndex(currentIndex)}
+              className="rounded-full p-1 text-muted-foreground/50 hover:text-destructive transition-colors shrink-0"
+              aria-label={`${currentExercise.name} 삭제`}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {/* 운동 타입별 입력 UI */}
@@ -456,9 +467,9 @@ export function LoggingStep({
         </CardContent>
       </Card>
 
-      {/* 이전/다음 버튼 */}
-      {currentExercises.length > 1 && (
-        <div className="flex gap-2">
+      {/* 이전/다음/추가 버튼 */}
+      <div className="flex gap-2">
+        {currentExercises.length > 1 && (
           <Button
             variant="secondary"
             className="flex-1"
@@ -468,17 +479,27 @@ export function LoggingStep({
             <ChevronLeft className="size-4" />
             이전
           </Button>
+        )}
+        {currentIndex < currentExercises.length - 1 ? (
           <Button
             variant="secondary"
             className="flex-1"
-            disabled={currentIndex === currentExercises.length - 1}
             onClick={() => setCurrentIndex((i) => i + 1)}
           >
             다음
             <ChevronRight className="size-4" />
           </Button>
-        </div>
-      )}
+        ) : (
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onAddExercises}
+          >
+            <Plus className="size-4" />
+            운동 추가
+          </Button>
+        )}
+      </div>
 
       {/* 운동 완료/취소 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
@@ -490,6 +511,35 @@ export function LoggingStep({
           {editMode ? "수정 완료" : "운동 완료"}
         </Button>
       </div>
+
+      {/* 운동 삭제 확인 다이얼로그 */}
+      <Dialog open={removeConfirmIndex !== null} onOpenChange={(open) => { if (!open) setRemoveConfirmIndex(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>운동을 삭제할까요?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {removeConfirmIndex !== null && currentExercises[removeConfirmIndex]?.name} 운동과 기록된 세트가 모두 삭제됩니다.
+          </p>
+          <DialogFooter className="flex-row gap-2">
+            <Button variant="secondary" className="flex-1" onClick={() => setRemoveConfirmIndex(null)}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => {
+                if (removeConfirmIndex !== null) {
+                  handleRemoveExercise(removeConfirmIndex)
+                  setRemoveConfirmIndex(null)
+                }
+              }}
+            >
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   )

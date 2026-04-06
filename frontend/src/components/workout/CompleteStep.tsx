@@ -31,7 +31,7 @@ export function CompleteStep({
   const savingRef = useRef(false)
 
   const totalSets = activeExercises.reduce((sum, ae) => sum + ae.sets.length, 0)
-  const exerciseCount = activeExercises.filter((ae) => ae.sets.length > 0).length
+  const exerciseCount = activeExercises.filter((ae) => ae.sets.length > 0 || ae.durationMin !== undefined).length
 
   async function handleSaveAndGo() {
     if (saved) {
@@ -85,23 +85,35 @@ export function CompleteStep({
       </Card>
 
       {/* 종목별 요약 */}
-      {activeExercises.filter((ae) => ae.sets.length > 0).length > 0 && (
+      {activeExercises.filter((ae) => ae.sets.length > 0 || ae.durationMin !== undefined).length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">종목별 기록</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {activeExercises
-              .filter((ae) => ae.sets.length > 0)
+              .filter((ae) => ae.sets.length > 0 || ae.durationMin !== undefined)
               .map((ae) => {
                 const exercise = exercises.find((e) => e.id === ae.exerciseId)
-                const maxWeight = Math.max(...ae.sets.map((s) => s.weightKg))
+                const isCardio = exercise?.type === "유산소"
+                const isStretching = exercise?.type === "스트레칭"
                 return (
                   <div key={ae.exerciseId} className="flex items-center justify-between text-sm">
                     <span className="font-medium">{exercise?.name ?? `#${ae.exerciseId}`}</span>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{ae.sets.length}세트</span>
-                      {maxWeight > 0 && <span>최대 {maxWeight}kg</span>}
+                      {(isCardio || isStretching) ? (
+                        <>
+                          {ae.durationMin !== undefined && <span>{ae.durationMin}분</span>}
+                          {isCardio && ae.distanceKm !== undefined && <span>{ae.distanceKm}km</span>}
+                        </>
+                      ) : (
+                        <>
+                          <span>{ae.sets.length}세트</span>
+                          {ae.sets.length > 0 && Math.max(...ae.sets.map((s) => s.weightKg)) > 0 && (
+                            <span>최대 {Math.max(...ae.sets.map((s) => s.weightKg))}kg</span>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 )
@@ -153,7 +165,7 @@ export function CompleteStep({
       {/* 하단 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex items-center gap-2 px-4">
         <Button variant="secondary" className="w-24" onClick={onRestart}>
-          취소
+          돌아가기
         </Button>
         <Button className="flex-1" onClick={handleSaveAndGo} disabled={saving}>
           {saving ? "저장 중..." : saved ? "홈으로 가기" : "저장하고 홈으로"}
