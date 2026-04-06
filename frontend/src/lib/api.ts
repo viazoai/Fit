@@ -217,12 +217,38 @@ export async function createWorkout(body: {
 
 export async function updateWorkout(
   id: number,
-  body: Record<string, unknown>,
+  body: {
+    memo?: string | null
+    kcal?: number | null
+    duration_min?: number | null
+    exercise_logs?: {
+      exercise_id: number
+      order_index?: number
+      duration_min?: number
+      distance_km?: number
+      speed_kmh?: number
+      incline_pct?: number
+      environment?: string | null
+      memo?: string | null
+      sets: {
+        set_index: number
+        reps?: number
+        weight_kg?: number
+        is_assisted?: boolean
+        assist_weight_kg?: number
+        memo?: string | null
+      }[]
+    }[]
+  },
 ): Promise<WorkoutSessionRead> {
   return request<WorkoutSessionRead>(`/api/workouts/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   })
+}
+
+export async function deleteWorkout(id: number): Promise<void> {
+  return request<void>(`/api/workouts/${id}`, { method: "DELETE" })
 }
 
 // ─── Calendar ────────────────────────────────────────────────────────────────

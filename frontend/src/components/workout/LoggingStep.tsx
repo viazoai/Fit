@@ -27,6 +27,8 @@ export function LoggingStep({
   onCancel,
   onAddExercises,
   onActiveExercisesChange,
+  editMode = false,
+  initialDurationMin,
 }: {
   exercises: Exercise[]
   initialActiveExercises?: ActiveExercise[]
@@ -34,6 +36,7 @@ export function LoggingStep({
   onCancel: () => void
   onAddExercises: () => void
   onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
+  editMode?: boolean
 }) {
   // exercises를 내부 state로 전환
   const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises)
@@ -53,10 +56,11 @@ export function LoggingStep({
   // 운동별 최근 수행 기록 캐시 (exerciseId → 세트 배열)
   const lastLogsRef = useRef<Map<number, LastSet[]>>(new Map())
 
-  // localStorage 기반 타이머
+  // localStorage 기반 타이머 (editMode에서는 사용 안 함)
   const [elapsedSec, setElapsedSec] = useState(0)
   const [, setPaused] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
 
   const [weightKg, setWeightKg] = useState("")
   const [reps, setReps] = useState("")
@@ -69,8 +73,9 @@ export function LoggingStep({
   const [inclinePct, setInclinePct] = useState("")
   const [cardioSaved, setCardioSaved] = useState(false)
 
-  // 타이머 초기화 (복원 or 신규)
+  // 타이머 초기화 (복원 or 신규) — editMode에서는 스킵
   useEffect(() => {
+    if (editMode) return
     if (!hasActiveTimer()) {
       startTimer()
     } else {
@@ -87,7 +92,7 @@ export function LoggingStep({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 탭 전환 시 — 세트 값 자동입력 + 유산소/스트레칭 값 복원
   useEffect(() => {
@@ -98,7 +103,7 @@ export function LoggingStep({
 
     if (lastSet) {
       // 2세트 이상: 직전 세트 기준 자동입력
-      setWeightKg(String(lastSet.weightKg))
+      setWeightKg(String(Math.round(lastSet.weightKg)))
       setReps(String(lastSet.reps))
       setRpe(lastSet.rpe)
     } else {
@@ -106,7 +111,7 @@ export function LoggingStep({
       const cached = lastLogsRef.current.get(exercise.id)
       if (cached) {
         const prev = cached[0]
-        setWeightKg(prev?.weight_kg != null ? String(prev.weight_kg) : "")
+        setWeightKg(prev?.weight_kg != null ? String(Math.round(prev.weight_kg)) : "")
         setReps(prev?.reps != null ? String(prev.reps) : "")
         setRpe(7)
       } else {
@@ -118,7 +123,7 @@ export function LoggingStep({
           lastLogsRef.current.set(exercise.id, sets)
           if (sets.length > 0 && activeExercises[currentIndex]?.sets.length === 0) {
             const prev = sets[0]
-            if (prev.weight_kg != null) setWeightKg(String(prev.weight_kg))
+            if (prev.weight_kg != null) setWeightKg(String(Math.round(prev.weight_kg)))
             if (prev.reps != null) setReps(String(prev.reps))
           }
         }).catch(() => {})
@@ -126,7 +131,7 @@ export function LoggingStep({
     }
 
     // 유산소/스트레칭 기존 값 복원
-    setDurationMin(ae?.durationMin !== undefined ? String(ae.durationMin) : "")
+    setDurationMin(ae?.durationMin !== undefined ? String(Math.round(ae.durationMin)) : "")
     setDistanceKm(ae?.distanceKm !== undefined ? String(ae.distanceKm) : "")
     setSpeedKmh(ae?.speedKmh !== undefined ? String(ae.speedKmh) : "")
     setInclinePct(ae?.inclinePct !== undefined ? String(ae.inclinePct) : "")
@@ -138,7 +143,7 @@ export function LoggingStep({
 
   function addSet() {
     const isBodyweight = currentExercise.type === "맨몸"
-    const w = isBodyweight ? 0 : parseFloat(weightKg)
+    const w = isBodyweight ? 0 : parseInt(weightKg)
     const r = parseInt(reps)
     if ((!isBodyweight && isNaN(w)) || isNaN(r) || r <= 0) return
 
@@ -170,7 +175,7 @@ export function LoggingStep({
 
   // 유산소/스트레칭 기록 저장
   function saveCardioRecord() {
-    const dur = parseFloat(durationMin) || undefined
+    const dur = parseInt(durationMin) || undefined
     const dist = parseFloat(distanceKm) || undefined
     const spd = parseFloat(speedKmh) || undefined
     const inc = parseFloat(inclinePct) || undefined
@@ -194,6 +199,10 @@ export function LoggingStep({
 
   // 완료 시 타이머 정리
   function handleComplete() {
+    if (editMode) {
+      onComplete(activeExercises, 0) // 부모(workout-edit)에서 duration 관리
+      return
+    }
     if (intervalRef.current) clearInterval(intervalRef.current)
     clearTimer()
     onComplete(activeExercises, elapsedSec)
@@ -276,7 +285,8 @@ export function LoggingStep({
                   <label className="mb-1 block text-xs text-muted-foreground">시간 (분) *</label>
                   <Input
                     type="number"
-                    inputMode="decimal"
+                    inputMode="numeric"
+                    step="1"
                     placeholder="30"
                     value={durationMin}
                     onChange={(e) => { setDurationMin(e.target.value); setCardioSaved(false) }}
@@ -337,7 +347,8 @@ export function LoggingStep({
                 <label className="mb-1 block text-xs text-muted-foreground">시간 (분)</label>
                 <Input
                   type="number"
-                  inputMode="decimal"
+                  inputMode="numeric"
+                  step="1"
                   placeholder="10"
                   value={durationMin}
                   onChange={(e) => { setDurationMin(e.target.value); setCardioSaved(false) }}
@@ -368,7 +379,8 @@ export function LoggingStep({
                     <label className="mb-1 block text-xs text-muted-foreground">무게 (kg)</label>
                     <Input
                       type="number"
-                      inputMode="decimal"
+                      inputMode="numeric"
+                      step="1"
                       placeholder="0"
                       value={weightKg}
                       onChange={(e) => setWeightKg(e.target.value)}
@@ -380,6 +392,7 @@ export function LoggingStep({
                   <Input
                     type="number"
                     inputMode="numeric"
+                    step="1"
                     placeholder="0"
                     value={reps}
                     onChange={(e) => setReps(e.target.value)}
@@ -415,7 +428,7 @@ export function LoggingStep({
                     {currentActive.sets.map((set) => (
                       <div key={set.setNumber} className={`grid text-xs ${currentExercise.type === "맨몸" ? "grid-cols-3" : "grid-cols-4"}`}>
                         <span className="font-medium">{set.setNumber}</span>
-                        {currentExercise.type !== "맨몸" && <span className="text-right">{set.weightKg}kg</span>}
+                        {currentExercise.type !== "맨몸" && <span className="text-right">{Math.round(set.weightKg)}kg</span>}
                         <span className="text-right">{set.reps}회</span>
                         <span className="text-right text-muted-foreground">{set.rpe}</span>
                       </div>
@@ -475,7 +488,7 @@ export function LoggingStep({
         </Button>
         <Button className="flex-1" onClick={handleComplete}>
           <CheckCircle2 />
-          운동 완료
+          {editMode ? "수정 완료" : "운동 완료"}
         </Button>
       </div>
 

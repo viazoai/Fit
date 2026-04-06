@@ -10,6 +10,7 @@ import AppShell from "@/components/layout/AppShell"
 import HomePage from "@/pages/home"
 import LogPage from "@/pages/log"
 import WorkoutLogPage from "@/pages/workout-log"
+import WorkoutEditPage from "@/pages/workout-edit"
 import ShopPage from "@/pages/shop"
 import ShopInventoryPage from "@/pages/shop-inventory"
 import ShopHistoryPage from "@/pages/shop-history"
@@ -31,6 +32,7 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/log" element={<LogPage />} />
         <Route path="/workout" element={<WorkoutLogPage />} />
+        <Route path="/workout/:id/edit" element={<WorkoutEditPage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/inventory" element={<ShopInventoryPage />} />
         <Route path="/shop/history" element={<ShopHistoryPage />} />

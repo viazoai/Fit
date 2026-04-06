@@ -32,7 +32,7 @@ class ExerciseLog(Base):
     order_index: Mapped[int | None] = mapped_column(SmallInteger)
 
     # cardio / flexibility
-    duration_min: Mapped[Decimal | None] = mapped_column(Numeric(5, 1))
+    duration_min: Mapped[int | None] = mapped_column(SmallInteger)
     distance_km: Mapped[Decimal | None] = mapped_column(Numeric(6, 3))
     speed_kmh: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))
     incline_pct: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))

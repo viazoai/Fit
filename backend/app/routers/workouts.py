@@ -148,6 +148,9 @@ def update_workout(
     if body.kcal is not None:
         session.kcal = body.kcal
 
+    if body.duration_min is not None:
+        session.duration_min = body.duration_min
+
     if body.exercise_logs is not None:
         # 기존 로그 삭제 후 재생성
         db.query(ExerciseLog).filter(ExerciseLog.session_id == session.id).delete()
@@ -183,3 +186,18 @@ def update_workout(
     db.commit()
     db.refresh(session)
     return get_workout(session.id, db, user)
+
+
+@router.delete("/{session_id}", status_code=204)
+def delete_workout(
+    session_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    session = db.query(WorkoutSession).filter(
+        WorkoutSession.id == session_id, WorkoutSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="운동 세션을 찾을 수 없음")
+    db.delete(session)
+    db.commit()

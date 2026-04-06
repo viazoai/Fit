@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, ChevronDown, ChevronUp, Clock } from "lucide-react"
+import { ChevronLeft, ChevronRight, Flame, List, CalendarDays, Dumbbell, Zap, ChevronDown, ChevronUp, Clock, Pencil, Trash2 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
@@ -37,8 +39,12 @@ function WorkoutSummaryCard({
   summary: WorkoutSessionSummary
   titleOverride?: string
 }) {
+  const navigate = useNavigate()
+  const { removeWorkout } = useWorkouts()
   const [expanded, setExpanded] = useState(false)
   const [detail, setDetail] = useState<WorkoutSessionRead | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   async function handleToggle() {
     const next = !expanded
@@ -50,6 +56,18 @@ function WorkoutSummaryCard({
       } catch (err) {
         console.error("세션 상세 로드 실패:", err)
       }
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await removeWorkout(summary.id)
+    } catch (err) {
+      console.error("삭제 실패:", err)
+    } finally {
+      setDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -124,7 +142,7 @@ function WorkoutSummaryCard({
                       {log.duration_min != null && (
                         <>
                           <span className="text-muted-foreground">시간</span>
-                          <span className="text-right">{log.duration_min}분</span>
+                          <span className="text-right">{Math.round(log.duration_min!)}분</span>
                         </>
                       )}
                       {log.distance_km != null && (
@@ -155,7 +173,7 @@ function WorkoutSummaryCard({
                     <div className="grid grid-cols-2 gap-x-3 text-xs">
                       <span className="text-muted-foreground">시간</span>
                       <span className="text-right">
-                        {log.duration_min != null ? `${log.duration_min}분` : "-"}
+                        {log.duration_min != null ? `${Math.round(log.duration_min)}분` : "-"}
                       </span>
                     </div>
                   )}
@@ -171,7 +189,7 @@ function WorkoutSummaryCard({
                         <div key={set.id} className="grid grid-cols-3 text-xs">
                           <span>{set.set_index}</span>
                           <span className="text-right">
-                            {set.weight_kg && set.weight_kg > 0 ? `${set.weight_kg}kg` : "-"}
+                            {set.weight_kg && set.weight_kg > 0 ? `${Math.round(set.weight_kg)}kg` : "-"}
                           </span>
                           <span className="text-right">{set.reps ?? "-"}회</span>
                         </div>
@@ -181,9 +199,47 @@ function WorkoutSummaryCard({
                 </div>
               )
             })}
+            <Separator />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1"
+                onClick={() => navigate(`/workout/${summary.id}/edit`)}
+              >
+                <Pencil className="size-3.5" />
+                수정
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1 text-destructive hover:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="size-3.5" />
+                삭제
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>운동 기록을 삭제할까요?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">삭제하면 되돌릴 수 없어요.</p>
+          <DialogFooter className="gap-2">
+            <Button variant="secondary" className="w-24" onClick={() => setShowDeleteDialog(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
