@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import ForeignKey, String, Boolean, SmallInteger, Numeric, Date, Text
+from sqlalchemy import ForeignKey, String, Boolean, SmallInteger, Numeric, Date, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -66,3 +66,16 @@ class ExerciseSet(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     exercise_log: Mapped["ExerciseLog"] = relationship(back_populates="sets")
+
+
+class WorkoutDraft(Base):
+    """진행 중인 운동 임시 저장 — 사용자당 1개, 운동 완료/취소 시 삭제"""
+    __tablename__ = "workout_drafts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    data: Mapped[dict] = mapped_column(JSON)  # SessionState 전체를 JSON으로 저장
+    started_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship()  # noqa: F821

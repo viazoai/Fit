@@ -91,3 +91,17 @@ class WorkoutSessionSummary(BaseModel):
     muscle_groups: list[str]
 
     model_config = {"from_attributes": True}
+
+
+# --- WorkoutDraft ---
+
+class WorkoutDraftUpsert(BaseModel):
+    data: dict  # 프론트엔드 SessionState 전체
+
+
+class WorkoutDraftRead(BaseModel):
+    data: dict
+    started_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}

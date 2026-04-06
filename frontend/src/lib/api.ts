@@ -251,6 +251,25 @@ export async function deleteWorkout(id: number): Promise<void> {
   return request<void>(`/api/workouts/${id}`, { method: "DELETE" })
 }
 
+export async function getDraft(): Promise<{ data: unknown; started_at: string; updated_at: string } | null> {
+  try {
+    return await request<{ data: unknown; started_at: string; updated_at: string }>("/api/workouts/draft")
+  } catch {
+    return null
+  }
+}
+
+export async function saveDraft(data: unknown): Promise<void> {
+  await request("/api/workouts/draft", {
+    method: "PUT",
+    body: JSON.stringify({ data }),
+  })
+}
+
+export async function deleteDraft(): Promise<void> {
+  await request("/api/workouts/draft", { method: "DELETE" })
+}
+
 // ─── Calendar ────────────────────────────────────────────────────────────────
 
 import type { CalendarResponse } from "@/types"

@@ -1,17 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 
 from app.db import get_db
 from app.models.user import User
-from app.models.workout import WorkoutSession, ExerciseLog, ExerciseSet
+from app.models.workout import WorkoutSession, ExerciseLog, ExerciseSet, WorkoutDraft
 from app.schemas.workout import (
     WorkoutSessionCreate,
     WorkoutSessionRead,
     WorkoutSessionUpdate,
     WorkoutSessionSummary,
     ExerciseLogRead,
+    WorkoutDraftUpsert,
+    WorkoutDraftRead,
 )
 from app.services.auth import get_current_user
 
@@ -67,6 +69,35 @@ def list_workouts(
             exercise_count=len(s.exercise_logs), muscle_groups=groups,
         ))
     return result
+
+
+@router.get("/draft", response_model=WorkoutDraftRead)
+def get_draft(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    draft = db.query(WorkoutDraft).filter(WorkoutDraft.user_id == user.id).first()
+    if not draft:
+        raise HTTPException(status_code=404, detail="진행 중인 운동 없음")
+    return draft
+
+
+@router.put("/draft", response_model=WorkoutDraftRead)
+def upsert_draft(body: WorkoutDraftUpsert, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    draft = db.query(WorkoutDraft).filter(WorkoutDraft.user_id == user.id).first()
+    now = datetime.utcnow()
+    if draft:
+        draft.data = body.data
+        draft.updated_at = now
+    else:
+        draft = WorkoutDraft(user_id=user.id, data=body.data, started_at=now, updated_at=now)
+        db.add(draft)
+    db.commit()
+    db.refresh(draft)
+    return draft
+
+
+@router.delete("/draft", status_code=204)
+def delete_draft(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    db.query(WorkoutDraft).filter(WorkoutDraft.user_id == user.id).delete()
+    db.commit()
 
 
 @router.get("/{session_id}", response_model=WorkoutSessionRead)
