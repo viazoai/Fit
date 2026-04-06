@@ -170,7 +170,6 @@ export default function WorkoutLogPage() {
       <SelectExercisesStep
         onConfirm={handleAddMoreExercises}
         onCancel={() => setStep("logging")}
-        excludeIds={new Set(selectedExercises.map((e) => e.id))}
       />
     )
   }

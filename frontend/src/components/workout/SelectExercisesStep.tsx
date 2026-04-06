@@ -25,9 +25,11 @@ export function SelectExercisesStep({
   const [muscleFilter, setMuscleFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
   const [equipmentFilter, setEquipmentFilter] = useState("all")
+  const isAddMode = !!onCancel
+
   const [selected, setSelected] = useState<Set<number>>(() => {
-    // 운동 추가 모드(isAddMode)에서는 이전 기록 무시, 첫 선택 시에만 복원
-    if (excludeIds && excludeIds.size > 0) return new Set()
+    // 운동 추가 모드에서는 이전 기록 무시, 첫 선택 시에만 복원
+    if (isAddMode) return new Set()
     try {
       const raw = localStorage.getItem("fit-last-exercises")
       return raw ? new Set<number>(JSON.parse(raw) as number[]) : new Set()
@@ -35,8 +37,6 @@ export function SelectExercisesStep({
       return new Set()
     }
   })
-
-  const isAddMode = !!onCancel
 
   const exerciseTypes = [...new Set(allExercises.map((e) => e.type))].sort()
   const equipmentTypes = [...new Set(allExercises.flatMap((e) => (e.equipment ?? []).filter((eq) => EQUIPMENT_SET.has(eq))))].sort()

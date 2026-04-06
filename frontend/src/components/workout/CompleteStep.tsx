@@ -93,12 +93,12 @@ export function CompleteStep({
           <CardContent className="flex flex-col gap-3">
             {activeExercises
               .filter((ae) => ae.sets.length > 0 || ae.durationMin !== undefined)
-              .map((ae) => {
+              .map((ae, i) => {
                 const exercise = exercises.find((e) => e.id === ae.exerciseId)
                 const isCardio = exercise?.type === "유산소"
                 const isStretching = exercise?.type === "스트레칭"
                 return (
-                  <div key={ae.exerciseId} className="flex items-center justify-between text-sm">
+                  <div key={i} className="flex items-center justify-between text-sm">
                     <span className="font-medium">{exercise?.name ?? `#${ae.exerciseId}`}</span>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       {(isCardio || isStretching) ? (

@@ -235,7 +235,7 @@ export function LoggingStep({
       <div ref={tabContainerRef} className="flex gap-2 overflow-x-auto pb-1">
         {currentExercises.map((exercise, i) => (
           <button
-            key={exercise.id}
+            key={i}
             ref={(el) => { tabRefs.current[i] = el }}
             onClick={() => setCurrentIndex(i)}
             className={[
