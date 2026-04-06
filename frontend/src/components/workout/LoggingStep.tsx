@@ -59,6 +59,7 @@ export function LoggingStep({
   }
   const [currentIndex, setCurrentIndex] = useState(() => Math.min(initialIndex, Math.max(0, initialExercises.length - 1)))
   const [removeConfirmIndex, setRemoveConfirmIndex] = useState<number | null>(null)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   // 탭 스크롤 refs
   const tabContainerRef = useRef<HTMLDivElement>(null)
@@ -506,7 +507,7 @@ export function LoggingStep({
 
       {/* 운동 완료/취소 버튼 */}
       <div className="fixed bottom-20 left-0 right-0 flex gap-2 px-4">
-        <Button variant="secondary" className="w-24" onClick={onCancel}>
+        <Button variant="secondary" className="w-24" onClick={() => setShowCancelConfirm(true)}>
           취소
         </Button>
         <Button className="flex-1" onClick={handleComplete}>
@@ -514,6 +515,26 @@ export function LoggingStep({
           {editMode ? "수정 완료" : "운동 완료"}
         </Button>
       </div>
+
+      {/* 운동 취소 확인 다이얼로그 */}
+      <Dialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>운동을 종료할까요?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            지금까지 기록한 세트가 모두 사라져요.
+          </p>
+          <DialogFooter className="flex-row gap-2 border-t-0 bg-transparent">
+            <Button variant="secondary" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+              계속하기
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={onCancel}>
+              종료
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 운동 삭제 확인 다이얼로그 */}
       <Dialog open={removeConfirmIndex !== null} onOpenChange={(open) => { if (!open) setRemoveConfirmIndex(null) }}>
@@ -524,7 +545,7 @@ export function LoggingStep({
           <p className="text-sm text-muted-foreground">
             {removeConfirmIndex !== null && currentExercises[removeConfirmIndex]?.name} 운동과 기록된 세트가 모두 삭제됩니다.
           </p>
-          <DialogFooter className="flex-row gap-2">
+          <DialogFooter className="flex-row gap-2 border-t-0 bg-transparent">
             <Button variant="secondary" className="flex-1" onClick={() => setRemoveConfirmIndex(null)}>
               취소
             </Button>
