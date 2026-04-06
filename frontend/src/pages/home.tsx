@@ -155,7 +155,7 @@ export default function HomePage() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <Activity className="size-4 text-primary" />
+                <Activity className="size-4 text-foreground" />
                 <CardTitle className="text-base">체성분 분석</CardTitle>
               </div>
             </CardHeader>
@@ -202,7 +202,7 @@ export default function HomePage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="size-4 text-primary" />
+                <Calendar className="size-4 text-foreground" />
                 <CardTitle className="text-base">최근 운동 기록</CardTitle>
               </div>
               <Link

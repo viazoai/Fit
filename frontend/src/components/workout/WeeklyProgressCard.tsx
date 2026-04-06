@@ -27,7 +27,7 @@ export function WeeklyProgressCard() {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-primary" />
+          <TrendingUp className="size-4 text-foreground" />
           <CardTitle className="text-base">이번 주 현황</CardTitle>
         </div>
       </CardHeader>

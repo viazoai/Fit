@@ -61,7 +61,7 @@ export default function MorePage() {
       {/* 화면 설정 */}
       <div className="px-4 pb-2">
         <div className="flex items-center gap-3 py-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-card border border-border">
             <Monitor className="size-5 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
@@ -102,7 +102,7 @@ export default function MorePage() {
               to={item.to}
               className="flex items-center gap-3 py-4 transition-colors hover:bg-muted/50 -mx-4 px-4 rounded-lg"
             >
-              <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-card border border-border">
                 <item.icon className="size-5 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">

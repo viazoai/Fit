@@ -7,7 +7,7 @@
 
 :root {
     /* ── Light theme ── */
-    /* 레이어 구조: background(살짝 회) → card(순백) → muted(카드 내부, 연회) */
+    /* 레이어 구조: background(순백) → card(순백) → muted(연회) */
     --background: #F2F2F2;
     --foreground: #171717;
     --card: #FFFFFF;
@@ -15,13 +15,13 @@
     --popover: #FFFFFF;
     --popover-foreground: #171717;
 
-    /* Primary = 그린 라임 (밝고 선명하되 흰 배경·흰 텍스트 양쪽 대비 확보) */
-    --primary: #4D9E1D;
+    /* Primary = 라임 (Fineed 스타일 yellow-green lime) */
+    --primary: #5DB33A;
     --primary-foreground: #FFFFFF;
 
     --secondary: #E8E8E8;
     --secondary-foreground: #171717;
-    --muted: #F2F2F2;          /* 카드 안 중첩 요소 — 배경과 동일 톤 */
+    --muted: #F5F5F5;          /* 카드 안 중첩 요소 */
     --muted-foreground: #737373;
     --accent: #E8E8E8;
     --accent-foreground: #171717;
@@ -29,11 +29,11 @@
     --destructive: oklch(0.704 0.191 22.216);
     --border: #E0E0E0;
     --input: #E8E8E8;
-    --ring: #4D9E1D;
+    --ring: #5DB33A;
 
     --accent-heat: #EA580C;
 
-    --chart-1: #4D9E1D;
+    --chart-1: #5DB33A;
     --chart-2: #EA580C;
     --chart-3: oklch(0.546 0.245 262.881);
     --chart-4: oklch(0.488 0.243 264.376);
