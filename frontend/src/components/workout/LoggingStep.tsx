@@ -137,9 +137,10 @@ export function LoggingStep({
   const currentActive = activeExercises[currentIndex]
 
   function addSet() {
-    const w = parseFloat(weightKg)
+    const isBodyweight = currentExercise.type === "맨몸"
+    const w = isBodyweight ? 0 : parseFloat(weightKg)
     const r = parseInt(reps)
-    if (isNaN(w) || isNaN(r) || r <= 0) return
+    if ((!isBodyweight && isNaN(w)) || isNaN(r) || r <= 0) return
 
     const newSet: ActiveSet = {
       exerciseId: currentExercise.id,
@@ -362,16 +363,18 @@ export function LoggingStep({
               <p className="text-xs font-medium">세트 {currentActive.sets.length + 1} 입력</p>
 
               <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="mb-1 block text-xs text-muted-foreground">무게 (kg)</label>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0"
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(e.target.value)}
-                  />
-                </div>
+                {currentExercise.type !== "맨몸" && (
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs text-muted-foreground">무게 (kg)</label>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={weightKg}
+                      onChange={(e) => setWeightKg(e.target.value)}
+                    />
+                  </div>
+                )}
                 <div className="flex-1">
                   <label className="mb-1 block text-xs text-muted-foreground">횟수</label>
                   <Input
@@ -387,7 +390,7 @@ export function LoggingStep({
               <RpeSlider value={rpe} onChange={setRpe} />
 
               <div className="flex gap-2">
-                <Button className="flex-1" onClick={addSet} disabled={!weightKg || !reps}>
+                <Button className="flex-1" onClick={addSet} disabled={currentExercise.type !== "맨몸" && (!weightKg || !reps) || currentExercise.type === "맨몸" && !reps}>
                   세트 기록
                 </Button>
                 {currentActive.sets.length > 0 && (
@@ -402,17 +405,17 @@ export function LoggingStep({
                 <div className="rounded-lg bg-muted/50 p-3">
                   <p className="mb-2 text-xs font-medium text-muted-foreground">기록된 세트</p>
                   <div className="flex flex-col gap-1">
-                    <div className="grid grid-cols-4 text-[11px] font-medium text-muted-foreground">
+                    <div className={`grid text-[11px] font-medium text-muted-foreground ${currentExercise.type === "맨몸" ? "grid-cols-3" : "grid-cols-4"}`}>
                       <span>세트</span>
-                      <span className="text-right">무게</span>
+                      {currentExercise.type !== "맨몸" && <span className="text-right">무게</span>}
                       <span className="text-right">횟수</span>
                       <span className="text-right">RPE</span>
                     </div>
                     <Separator />
                     {currentActive.sets.map((set) => (
-                      <div key={set.setNumber} className="grid grid-cols-4 text-xs">
+                      <div key={set.setNumber} className={`grid text-xs ${currentExercise.type === "맨몸" ? "grid-cols-3" : "grid-cols-4"}`}>
                         <span className="font-medium">{set.setNumber}</span>
-                        <span className="text-right">{set.weightKg}kg</span>
+                        {currentExercise.type !== "맨몸" && <span className="text-right">{set.weightKg}kg</span>}
                         <span className="text-right">{set.reps}회</span>
                         <span className="text-right text-muted-foreground">{set.rpe}</span>
                       </div>

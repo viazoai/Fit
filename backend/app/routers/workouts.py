@@ -57,7 +57,10 @@ def list_workouts(
     sessions = query.order_by(WorkoutSession.date.desc()).all()
     result = []
     for s in sessions:
-        groups = list({log.exercise.muscle_group for log in s.exercise_logs if log.exercise and log.exercise.muscle_group})
+        groups = list({
+            log.exercise.type if log.exercise.muscle_group == "없음" else log.exercise.muscle_group
+            for log in s.exercise_logs if log.exercise and log.exercise.muscle_group
+        })
         result.append(WorkoutSessionSummary(
             id=s.id, user_id=s.user_id, date=s.date, memo=s.memo, kcal=s.kcal,
             duration_min=s.duration_min,
