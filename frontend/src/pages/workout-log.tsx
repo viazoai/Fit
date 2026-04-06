@@ -29,7 +29,9 @@ export default function WorkoutLogPage() {
   )
   const [completedExercises, setCompletedExercises] = useState<ActiveExercise[]>([])
   const [completedElapsedSec, setCompletedElapsedSec] = useState(0)
-  const [loggingInitialIndex, setLoggingInitialIndex] = useState(0)
+  const [loggingInitialIndex, setLoggingInitialIndex] = useState(
+    () => session?.currentExerciseIndex ?? 0
+  )
 
   function handleSelectExercises(exercises: Exercise[]) {
     clearTimer()
@@ -48,6 +50,12 @@ export default function WorkoutLogPage() {
   function handleActiveExercisesChange(exercises: ActiveExercise[]) {
     if (session) {
       setSession({ ...session, activeExercises: exercises })
+    }
+  }
+
+  function handleIndexChange(index: number) {
+    if (session) {
+      setSession({ ...session, currentExerciseIndex: index })
     }
   }
 
@@ -177,6 +185,7 @@ export default function WorkoutLogPage() {
         onCancel={handleRestart}
         onAddExercises={() => { setLoggingInitialIndex(0); setStep("add-exercises") }}
         onActiveExercisesChange={handleActiveExercisesChange}
+        onIndexChange={handleIndexChange}
       />
     )
   }

@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/context/user-context"
 import { useWorkouts } from "@/context/workout-context"
 import { getToday } from "@/lib/date-utils"
 import ProfilePopover from "@/components/layout/ProfilePopover"
+import { getElapsedMs } from "@/lib/timer-storage"
 
 function calcStreakFromSummaries(
   userId: number,
@@ -37,16 +38,16 @@ interface HeaderProps {
   transparent?: boolean
 }
 
-function useElapsedTimer(startedAt: string | undefined) {
+function useElapsedTimer(active: boolean) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
-    if (!startedAt) { setElapsed(0); return }
-    const tick = () => setElapsed(Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000))
+    if (!active) { setElapsed(0); return }
+    const tick = () => setElapsed(Math.floor(getElapsedMs() / 1000))
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [startedAt])
+  }, [active])
 
   return elapsed
 }
@@ -64,7 +65,7 @@ export default function Header({ transparent = false }: HeaderProps) {
   const { summaries, isWorkoutActive, session } = useWorkouts()
   const today = getToday()
   const streak = calcStreakFromSummaries(currentUser.id, today, summaries)
-  const elapsed = useElapsedTimer(isWorkoutActive ? session?.startedAt : undefined)
+  const elapsed = useElapsedTimer(isWorkoutActive)
 
   return (
     <header

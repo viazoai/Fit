@@ -25,7 +25,16 @@ export function SelectExercisesStep({
   const [muscleFilter, setMuscleFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
   const [equipmentFilter, setEquipmentFilter] = useState("all")
-  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [selected, setSelected] = useState<Set<number>>(() => {
+    // 운동 추가 모드(isAddMode)에서는 이전 기록 무시, 첫 선택 시에만 복원
+    if (excludeIds && excludeIds.size > 0) return new Set()
+    try {
+      const raw = localStorage.getItem("fit-last-exercises")
+      return raw ? new Set<number>(JSON.parse(raw) as number[]) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
 
   const isAddMode = !!onCancel
 
@@ -65,6 +74,10 @@ export function SelectExercisesStep({
 
   function handleConfirm() {
     const exercises = allExercises.filter((e) => selected.has(e.id))
+    // 마지막 선택 종목 저장 (추가 모드에서는 저장 안 함)
+    if (!isAddMode) {
+      localStorage.setItem("fit-last-exercises", JSON.stringify([...selected]))
+    }
     onConfirm(exercises)
   }
 

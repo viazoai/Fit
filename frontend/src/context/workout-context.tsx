@@ -19,6 +19,7 @@ interface SessionState {
   selectedExercises: Exercise[]
   activeExercises: ActiveExercise[]
   startedAt: string
+  currentExerciseIndex?: number
 }
 
 interface WorkoutContextValue {

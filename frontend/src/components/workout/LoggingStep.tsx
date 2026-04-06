@@ -31,6 +31,7 @@ export function LoggingStep({
   onCancel,
   onAddExercises,
   onActiveExercisesChange,
+  onIndexChange,
   editMode = false,
 }: {
   exercises: Exercise[]
@@ -40,6 +41,7 @@ export function LoggingStep({
   onCancel: () => void
   onAddExercises: () => void
   onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
+  onIndexChange?: (index: number) => void
   editMode?: boolean
 }) {
   // exercises를 내부 state로 전환
@@ -103,13 +105,14 @@ export function LoggingStep({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 탭 인덱스 변경 시 해당 탭으로 스크롤
+  // 탭 인덱스 변경 시 해당 탭으로 스크롤 + 부모에 인덱스 알림 (새로고침 복원용)
   useEffect(() => {
     const tab = tabRefs.current[currentIndex]
     if (tab) {
       tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" })
     }
-  }, [currentIndex])
+    onIndexChange?.(currentIndex)
+  }, [currentIndex]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 탭 전환 시 — 세트 값 자동입력 + 유산소/스트레칭 값 복원
   useEffect(() => {
