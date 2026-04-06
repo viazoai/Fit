@@ -28,7 +28,6 @@ export function LoggingStep({
   onAddExercises,
   onActiveExercisesChange,
   editMode = false,
-  initialDurationMin,
 }: {
   exercises: Exercise[]
   initialActiveExercises?: ActiveExercise[]

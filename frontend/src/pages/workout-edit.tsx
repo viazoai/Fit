@@ -63,7 +63,7 @@ export default function WorkoutEditPage() {
       .finally(() => setLoading(false))
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleComplete(completed: ActiveExercise[], elapsedSec: number) {
+  async function handleComplete(completed: ActiveExercise[], _elapsedSec: number) {
     if (!id || !detail) return
     setSaving(true)
     try {
@@ -129,7 +129,7 @@ export default function WorkoutEditPage() {
   if (step === "add-exercises") {
     return (
       <SelectExercisesStep
-        initialSelected={selectedExercises}
+        excludeIds={new Set(selectedExercises.map((e) => e.id))}
         onConfirm={handleAddExercises}
         onCancel={() => setStep("logging")}
       />
