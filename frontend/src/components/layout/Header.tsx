@@ -62,7 +62,7 @@ function formatElapsed(sec: number) {
 
 export default function Header({ transparent = false }: HeaderProps) {
   const { currentUser } = useCurrentUser()
-  const { summaries, isWorkoutActive, session } = useWorkouts()
+  const { summaries, isWorkoutActive } = useWorkouts()
   const today = getToday()
   const streak = calcStreakFromSummaries(currentUser.id, today, summaries)
   const elapsed = useElapsedTimer(isWorkoutActive)

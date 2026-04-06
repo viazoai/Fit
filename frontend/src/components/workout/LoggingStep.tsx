@@ -10,11 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import {
   startTimer,
   pauseTimer,
-  resumeTimer,
   getElapsedMs,
   isPaused as getIsPaused,
   hasActiveTimer,
-  clearTimer,
 } from "@/lib/timer-storage"
 import { getLastExerciseLog } from "@/lib/api"
 import type { Exercise, ActiveSet, ActiveExercise } from "@/types"
