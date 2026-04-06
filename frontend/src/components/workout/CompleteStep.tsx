@@ -104,7 +104,7 @@ export function CompleteStep({
                       {(isCardio || isStretching) ? (
                         <>
                           {ae.durationMin !== undefined && <span>{ae.durationMin}분</span>}
-                          {isCardio && ae.distanceKm !== undefined && <span>{ae.distanceKm}km</span>}
+                          {isCardio && ae.distanceKm !== undefined && <span>{Number(ae.distanceKm).toFixed(1)}km</span>}
                         </>
                       ) : (
                         <>

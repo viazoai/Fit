@@ -148,7 +148,7 @@ function WorkoutSummaryCard({
                       {log.distance_km != null && (
                         <>
                           <span className="text-muted-foreground">거리</span>
-                          <span className="text-right">{log.distance_km}km</span>
+                          <span className="text-right">{Number(log.distance_km).toFixed(1)}km</span>
                         </>
                       )}
                       {log.speed_kmh != null && (
