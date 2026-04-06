@@ -151,12 +151,12 @@ export function CompleteStep({
       )}
 
       {/* 하단 버튼 */}
-      <div className="fixed bottom-20 left-0 right-0 flex flex-col gap-2 px-4">
-        <Button className="w-full" onClick={handleSaveAndGo} disabled={saving}>
-          {saving ? "저장 중..." : saved ? "홈으로 가기" : "저장하고 홈으로"}
+      <div className="fixed bottom-20 left-0 right-0 flex items-center gap-2 px-4">
+        <Button variant="secondary" className="w-24" onClick={onRestart}>
+          취소
         </Button>
-        <Button variant="secondary" className="w-full" onClick={onRestart}>
-          다시 기록하기
+        <Button className="flex-1" onClick={handleSaveAndGo} disabled={saving}>
+          {saving ? "저장 중..." : saved ? "홈으로 가기" : "저장하고 홈으로"}
         </Button>
       </div>
     </div>
