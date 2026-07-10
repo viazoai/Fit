@@ -29,6 +29,7 @@ export function LoggingStep({
   onCancel,
   onAddExercises,
   onActiveExercisesChange,
+  onExercisesChange,
   onIndexChange,
   editMode = false,
 }: {
@@ -39,16 +40,22 @@ export function LoggingStep({
   onCancel: () => void
   onAddExercises: () => void
   onActiveExercisesChange?: (exercises: ActiveExercise[]) => void
+  onExercisesChange?: (exercises: Exercise[], activeExercises: ActiveExercise[]) => void
   onIndexChange?: (index: number) => void
   editMode?: boolean
 }) {
   // exercises를 내부 state로 전환
   const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises)
   const [activeExercises, setActiveExercises] = useState<ActiveExercise[]>(() => {
-    if (initialActiveExercises && initialActiveExercises.length > 0) {
-      return initialActiveExercises
-    }
-    return initialExercises.map((e) => ({ exerciseId: e.id, sets: [] }))
+    // initialActiveExercises가 exercises와 길이·순서가 어긋난 손상된 draft일 수 있다.
+    // (예: 로깅 중 종목 삭제가 session.selectedExercises에 반영되지 않은 경우)
+    // 렌더는 exercises 기준으로 activeExercises[i]에 접근하므로 항상 exercises에 맞춰 정렬·복원한다.
+    // exerciseId로 매칭하되 중복 종목은 순서대로 소비하고, 없으면 빈 항목으로 채운다.
+    const pool = [...(initialActiveExercises ?? [])]
+    return initialExercises.map((e) => {
+      const idx = pool.findIndex((ae) => ae.exerciseId === e.id)
+      return idx !== -1 ? pool.splice(idx, 1)[0] : { exerciseId: e.id, sets: [] }
+    })
   })
 
   function updateActiveExercises(updated: ActiveExercise[]) {
@@ -209,11 +216,21 @@ export function LoggingStep({
     setCardioSaved(true)
   }
 
-  // 운동 삭제
+  // 운동 삭제 — currentExercises와 activeExercises를 함께 줄이고,
+  // 부모 세션의 selectedExercises에도 전파해야 재접속 시 두 배열이 어긋나지 않는다.
   function handleRemoveExercise(index: number) {
-    setCurrentExercises((prev) => prev.filter((_, i) => i !== index))
-    updateActiveExercises(activeExercises.filter((_, i) => i !== index))
-    setCurrentIndex((prev) => Math.min(prev, currentExercises.length - 2))
+    const nextExercises = currentExercises.filter((_, i) => i !== index)
+    const nextActive = activeExercises.filter((_, i) => i !== index)
+    setCurrentExercises(nextExercises)
+    setActiveExercises(nextActive)
+    // onExercisesChange가 있으면 두 배열을 한 번에 세션에 반영(개별 콜백 중복 저장 방지),
+    // 없으면(editMode 등) 기존대로 activeExercises만 부모에 알린다.
+    if (onExercisesChange) {
+      onExercisesChange(nextExercises, nextActive)
+    } else {
+      onActiveExercisesChange?.(nextActive)
+    }
+    setCurrentIndex((prev) => Math.min(prev, nextExercises.length - 1))
   }
 
   // 완료 시 타이머 일시정지 (돌아가기 시 재개, 저장 시 clearTimer)

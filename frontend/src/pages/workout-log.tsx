@@ -53,6 +53,15 @@ export default function WorkoutLogPage() {
     }
   }
 
+  // 로깅 중 종목 삭제 시: selectedExercises와 activeExercises를 한 번에 갱신해야
+  // 세션의 두 배열이 어긋나지 않는다(어긋나면 재접속 시 LoggingStep이 크래시).
+  function handleExercisesChange(exercises: Exercise[], activeExercises: ActiveExercise[]) {
+    setSelectedExercises(exercises)
+    if (session) {
+      setSession({ ...session, selectedExercises: exercises, activeExercises })
+    }
+  }
+
   function handleIndexChange(index: number) {
     if (session) {
       setSession({ ...session, currentExerciseIndex: index })
@@ -184,6 +193,7 @@ export default function WorkoutLogPage() {
         onCancel={handleRestart}
         onAddExercises={() => { setLoggingInitialIndex(0); setStep("add-exercises") }}
         onActiveExercisesChange={handleActiveExercisesChange}
+        onExercisesChange={handleExercisesChange}
         onIndexChange={handleIndexChange}
       />
     )
